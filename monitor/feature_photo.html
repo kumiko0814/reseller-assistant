@@ -287,9 +287,9 @@
   async function loadLib() {
     if (bgRemovalLib) return bgRemovalLib;
     const CANDIDATES = [
-      'https://esm.sh/@imgly/background-removal@1.6.0',
-      'https://esm.sh/@imgly/background-removal@1.5.9',
-      'https://esm.sh/@imgly/background-removal@1.4.5'
+      'https://esm.sh/@imgly/background-removal@1.6.0?bundle',
+      'https://esm.sh/@imgly/background-removal@1.5.9?bundle',
+      'https://esm.sh/@imgly/background-removal@1.4.5?bundle'
     ];
     for (const url of CANDIDATES) {
       try {
