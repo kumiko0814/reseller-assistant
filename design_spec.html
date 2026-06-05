@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Re:sellerアシスタント 設計書 | Merone</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --sub: #5a5a5a;
+    --bg: #fafaf7;
+    --card: #ffffff;
+    --line: #e6e3dc;
+    --accent: #c25b3f;       /* Terracotta */
+    --accent2: #1f6f5e;      /* Deep Forest */
+    --soft: #f3efe7;
+    --hot-bg: #fff8f4;
+    --hot-border: #f0d6c8;
+    --warn: #b8412a;
+    --mute-bg: #ececea;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    font-family: "Yu Gothic", "YuGothic", "游ゴシック", "Hiragino Kaku Gothic ProN", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.75;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.01em;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  /* Nav */
+  .nav {
+    position: sticky;
+    top: 0;
+    background: rgba(250,250,247,0.95);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+    z-index: 100;
+    padding: 10px 0;
+    margin-bottom: 24px;
+  }
+  .nav-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 12px;
+  }
+  .nav a {
+    color: var(--sub);
+    text-decoration: none;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+  }
+  .nav a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Hero */
+  .hero {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 40px 28px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .hero::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: var(--accent);
+    margin-bottom: 18px;
+  }
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--sub);
+    margin-bottom: 8px;
+  }
+  .hero h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  .hero-sub {
+    color: var(--sub);
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+  .hero-summary {
+    background: var(--soft);
+    border-left: 3px solid var(--accent);
+    padding: 18px 20px;
+    border-radius: 2px;
+  }
+  .hero-summary strong { color: var(--accent); font-weight: 700; }
+  .hero-summary p + p { margin-top: 10px; }
+
+  /* Section */
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
+    scroll-margin-top: 72px;
+  }
+  h2 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  h2 .num {
+    color: var(--accent);
+    margin-right: 10px;
+    font-weight: 800;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 22px 0 10px;
+    color: var(--ink);
+    border-left: 3px solid var(--accent2);
+    padding-left: 10px;
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 16px 0 8px;
+    color: var(--accent);
+  }
+  p { margin-bottom: 10px; color: var(--ink); }
+  .muted { color: var(--sub); font-size: 13px; }
+  ul { margin-left: 1.2em; }
+  ul li { margin-bottom: 4px; }
+  .small { font-size: 13px; }
+  .center { text-align: center; }
+
+  /* Spec list (hero) */
+  .spec-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .spec-list li {
+    display: flex;
+    border-bottom: 1px dashed var(--line);
+    padding: 8px 0;
+    font-size: 14px;
+  }
+  .spec-list li:last-child { border-bottom: none; }
+  .spec-list .k {
+    flex: 0 0 130px;
+    color: var(--sub);
+    font-weight: 700;
+  }
+  .spec-list .v { flex: 1; color: var(--ink); }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    font-size: 14px;
+  }
+  th, td {
+    border-bottom: 1px solid var(--line);
+    padding: 10px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--soft);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  td.center, th.center { text-align: center; }
+  .reco { background: var(--hot-bg); }
+  .reco strong { color: var(--accent); }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    background: var(--soft);
+    color: var(--sub);
+    margin-right: 4px;
+    letter-spacing: 0.05em;
+  }
+  .tag-accent { background: var(--accent); color: var(--card); }
+  .tag-forest { background: var(--accent2); color: var(--card); }
+  .tag-warn { background: var(--warn); color: var(--card); }
+
+  /* Quote */
+  .quote {
+    background: var(--soft);
+    border-left: 3px solid var(--accent2);
+    padding: 14px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+    color: var(--sub);
+    border-radius: 2px;
+  }
+  .quote::before { content: "「"; color: var(--accent); }
+  .quote::after { content: "」"; color: var(--accent); }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 16px 14px;
+    background: var(--bg);
+  }
+  .card-num {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--card);
+    background: var(--accent);
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+  .card h4 { margin-top: 0; }
+  .card .io { font-size: 13px; margin-top: 8px; }
+  .card .io b { color: var(--accent2); }
+
+  /* Mockup phone */
+  .phones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 18px 0; }
+  .phone {
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+    background: #fff;
+    padding: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  .phone-screen {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+  .phone-bar {
+    background: var(--accent);
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  .phone-bar.monitor { background: var(--accent2); }
+  .phone-bar.expired { background: #999; }
+  .phone-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .phone-card .pc-title {
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .phone-card .pc-sub { color: var(--sub); font-size: 11px; }
+  .phone-btn {
+    background: var(--accent);
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 4px;
+    margin: 4px 0;
+  }
+  .phone-btn.muted-btn {
+    background: var(--mute-bg);
+    color: #999;
+  }
+  .phone-btn.forest { background: var(--accent2); }
+  .phone-tab {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 4px 8px;
+    font-size: 11px;
+    margin: 0 2px 4px 0;
+    border-radius: 3px;
+  }
+  .phone-tab.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Modal mock */
+  .modal-mock {
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    padding: 24px 12px;
+    margin: 12px 0;
+  }
+  .modal-inner {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .modal-inner h5 {
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .modal-inner p {
+    font-size: 12px;
+    color: var(--sub);
+    margin-bottom: 12px;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  .flow-step {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    padding: 10px 6px;
+    text-align: center;
+    border-radius: 3px;
+    position: relative;
+  }
+  .flow-step b {
+    display: block;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  /* Stack diagram */
+  .stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .stack-layer {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px;
+    background: var(--bg);
+    text-align: center;
+    font-size: 13px;
+  }
+  .stack-layer .layer-label {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .stack-layer .layer-name { font-weight: 700; }
+  .stack-layer .layer-sub { color: var(--sub); font-size: 11px; margin-top: 4px; }
+
+  /* Code block */
+  .code {
+    background: #2a2a2a;
+    color: #f0f0f0;
+    padding: 14px 16px;
+    border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .code .com { color: #8a9aa3; }
+  .code .key { color: #e6a96a; }
+  .code .str { color: #b5d04e; }
+
+  /* Notice */
+  .notice {
+    background: var(--hot-bg);
+    border: 1px solid var(--hot-border);
+    border-left: 4px solid var(--accent);
+    padding: 14px 16px;
+    margin: 14px 0;
+    border-radius: 2px;
+    font-size: 14px;
+  }
+  .notice b { color: var(--accent); }
+
+  /* Timeline */
+  .timeline { margin: 16px 0; }
+  .tl-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 14px;
+  }
+  .tl-day {
+    color: var(--accent);
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* LINE notification */
+  .notif {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 12px 14px;
+    margin: 12px 0;
+    max-width: 340px;
+    font-size: 13px;
+  }
+  .notif-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .notif-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    margin-right: 8px;
+  }
+  .notif-app {
+    font-size: 11px;
+    color: var(--sub);
+    font-weight: 700;
+  }
+  .notif-time {
+    font-size: 10px;
+    color: var(--sub);
+    margin-left: auto;
+  }
+  .notif-body { font-size: 12px; color: var(--ink); line-height: 1.6; }
+  .notif-body b { color: var(--accent); }
+
+  /* Action box */
+  .action {
+    background: var(--accent2);
+    color: #fff;
+    padding: 18px 20px;
+    border-radius: 4px;
+    margin: 18px 0;
+  }
+  .action h3 {
+    color: #fff;
+    border-left-color: #fff;
+    margin-top: 0;
+  }
+  .action ol { margin-left: 1.4em; }
+  .action ol li { margin-bottom: 6px; }
+
+  /* responsive */
+  @media (max-width: 640px) {
+    .wrap { padding: 20px 14px 60px; }
+    .hero { padding: 28px 18px; }
+    .hero h1 { font-size: 22px; }
+    section { padding: 22px 16px; }
+    h2 { font-size: 19px; }
+    .cards { grid-template-columns: 1fr; }
+    .phones { grid-template-columns: 1fr; }
+    .stack { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: 1fr 1fr; }
+    .nav-inner { font-size: 11px; gap: 4px 10px; }
+    .spec-list li { flex-direction: column; }
+    .spec-list .k { flex: none; margin-bottom: 2px; }
+    .tl-row { grid-template-columns: 64px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#overview">概要</a>
+    <a href="#versions">2版比較</a>
+    <a href="#ui">UI</a>
+    <a href="#features">6機能</a>
+    <a href="#models">モデル</a>
+    <a href="#sheets">スプシ連動</a>
+    <a href="#logic">分岐ロジック</a>
+    <a href="#alert">アラート</a>
+    <a href="#stack">技術構成</a>
+    <a href="#timeline">10日計画</a>
+    <a href="#cost">コスト</a>
+    <a href="#risk">リスク</a>
+    <a href="#next">次の一手</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">DESIGN SPEC / 2026.06</div>
+    <h1>Re:sellerアシスタント 設計書</h1>
+    <p class="hero-sub">メルカリ出品の全工程をAIで支援する。モニター5日間 × 100人で6月プロモへ。</p>
+    <div class="hero-summary">
+      <p><strong>結論：</strong>美里さん5要望＋GPTs統合で「出品文・写真・価格・診断・在庫・履歴」の6機能をWebサイト化。GitHub Pagesで2ドメイン分離（生徒/モニター）、Cloudflare Workers＋Claude APIで動作。開発10日、月額コスト$60〜$110で稼働。</p>
+      <p><strong>狙い：</strong>モニター100人 → Re:cheスクール体験会への送客導線を確立。生徒は在籍中ずっと無料で囲い込み。</p>
+    </div>
+
+    <h3 style="margin-top:24px;">確定スペック</h3>
+    <ul class="spec-list">
+      <li><span class="k">プロダクト名</span><span class="v">Re:sellerアシスタント</span></li>
+      <li><span class="k">対象</span><span class="v">Re:cheスクール（リッシュ）受講生 ＋ 6月プロモのモニター100人</span></li>
+      <li><span class="k">モニター期間</span><span class="v">5日間（経過で全機能ロック）</span></li>
+      <li><span class="k">生徒継続条件</span><span class="v">在籍中ずっと無料・卒業で停止</span></li>
+      <li><span class="k">期限切れ動線</span><span class="v">Re:cheスクール体験会へ誘導モーダル</span></li>
+      <li><span class="k">デプロイ</span><span class="v">GitHub Pages（生徒/モニターで2ドメイン分離）</span></li>
+      <li><span class="k">バックエンド</span><span class="v">Cloudflare Workers ＋ Claude API ＋ Supabase ＋ Google Sheets API</span></li>
+      <li><span class="k">開発期間</span><span class="v">10日</span></li>
+      <li><span class="k">月額コスト見込み</span><span class="v">$60〜$110（モニター100人想定）</span></li>
+    </ul>
+  </div>
+
+  <!-- 1. 概要 -->
+  <section id="overview">
+    <h2><span class="num">01</span>プロダクト概要</h2>
+    <p>メルカリ出品の「考える時間」を全てAIに任せるWebサイト型ツール。生徒は仕入れた商品をスマホで撮るだけで、タイトル・説明文・価格・ハッシュタグ・写真加工までワンストップで完了する。</p>
+
+    <h3>解決する課題</h3>
+    <ul>
+      <li><b>タイトルが思いつかない</b> → 美里さん／南雲さん／瀬楽ちかこさん他、月利10〜30万到達者のスタイルを学習したAIが40文字で生成</li>
+      <li><b>価格設定で迷う</b> → 「早く売りたい／相場／美品」3パターン＋送料考慮で推奨価格を提示</li>
+      <li><b>写真の背景処理が面倒</b> → アップロード→remove.bg APIで自動白背景化</li>
+      <li><b>在庫が滞留してることに気づかない</b> → スプシ連動で滞留検知＋朝7時にプッシュ通知</li>
+      <li><b>自分の出品が何を改善すべきか分からない</b> → スクショアップ→5項目で具体的に指摘</li>
+    </ul>
+
+    <h3>美里さんの声（学習素材提供時）</h3>
+    <div class="quote">タイトルに毎回30分かかる。写真は撮ったあと加工が地獄。出品診断と価格診断は本当に欲しい。月利30万まで到達してきた経験を、生徒さんに使いやすい形で渡せたら</div>
+    <p class="muted">出典：宮島美里さん（推測：5月くみこさんヒアリング時）／ニックネーム「美里さん」</p>
+  </section>
+
+  <!-- 2. 2版比較 -->
+  <section id="versions">
+    <h2><span class="num">02</span>2バージョン比較（生徒版 / モニター版）</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>生徒版</th>
+            <th>モニター版</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>URL</td>
+            <td><code>kumiko0814.github.io/reseller-student/</code></td>
+            <td><code>kumiko0814.github.io/reseller-monitor/</code></td>
+          </tr>
+          <tr>
+            <td>画面上部バー</td>
+            <td><span class="tag tag-accent">Re:cheスクール会員</span></td>
+            <td><span class="tag tag-forest">モニター版・残り○日○時間</span></td>
+          </tr>
+          <tr>
+            <td>有効期限</td>
+            <td>在籍中ずっと</td>
+            <td>登録から5日間</td>
+          </tr>
+          <tr>
+            <td>期限切れ動作</td>
+            <td>なし（卒業時に停止）</td>
+            <td>全ボタングレーアウト＋体験会誘導モーダル</td>
+          </tr>
+          <tr>
+            <td>一括処理</td>
+            <td>無制限</td>
+            <td>1日5商品まで</td>
+          </tr>
+          <tr>
+            <td>履歴保存</td>
+            <td>永続</td>
+            <td>期限後30日保存（入会で引き継ぎ）</td>
+          </tr>
+          <tr class="reco">
+            <td><strong>狙い</strong></td>
+            <td><strong>囲い込み・継続価値</strong></td>
+            <td><strong>体験 → スクール体験会送客</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. UIモックアップ -->
+  <section id="ui">
+    <h2><span class="num">03</span>画面UI モックアップ</h2>
+    <p class="muted">PC・スマホ両対応。下記はスマホでの表示イメージ。</p>
+
+    <div class="phones">
+      <!-- 生徒版トップ -->
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-bar">Re:cheスクール会員</div>
+          <div class="phone-card">
+            <div class="pc-title">こんにちは、◯◯さん</div>
+            <div class="pc-sub">今月の出品 12点 / 売上 ¥84,200</div>
+          </div>
+          <div>
+            <span class="phone-tab on">出品文</span>
+            <span class="phone-tab">写真加工</span>
+            <span class="phone-tab">価格診断</span>
+            <span class="phone-tab">出品診断</span>
+            <span class="phone-tab">在庫</span>
+            <span class="phone-tab">履歴</span>
+          </div>
+          <div class="phone-card">
+            <div class="pc-title">画像 or テキスト or URLで入力</div>
+            <div class="pc-sub">商品の特徴を一言入れるだけ</div>
+          </div>
+          <div class="phone-btn">出品文を生成する</div>
+        </div>
+      </div>
+
+      <!-- モニター版 残り日数表示 -->
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-bar monitor">モニター版・残り 3日 12時間</div>
+          <div class="phone-card">
+            <div class="pc-title">本日の利用枠</div>
+            <div class="pc-sub">3 / 5 商品（残り2枠）</div>
+          </div>
+          <div>
+            <span class="phone-tab on">出品文</span>
+            <span class="phone-tab">写真加工</span>
+            <span class="phone-tab">価格診断</span>
+            <span class="phone-tab">出品診断</span>
+            <span class="phone-tab">在庫</span>
+            <span class="phone-tab">履歴</span>
+          </div>
+          <div class="phone-card">
+            <div class="pc-title">生成結果</div>
+            <div class="pc-sub">タイトル：シャネル トートバッグ ベージュ A4 美品</div>
+          </div>
+          <div class="phone-btn">出品文を生成する</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>期限切れモーダル（モニター版のみ）</h3>
+    <div class="phones">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-bar expired">モニター期間が終了しました</div>
+          <div class="phone-card" style="opacity:0.4;">
+            <div class="pc-title">本日の利用枠</div>
+            <div class="pc-sub">- / -</div>
+          </div>
+          <div style="opacity:0.4;">
+            <span class="phone-tab">出品文</span>
+            <span class="phone-tab">写真加工</span>
+            <span class="phone-tab">価格診断</span>
+          </div>
+          <div class="phone-btn muted-btn">生成する</div>
+          <div class="modal-mock">
+            <div class="modal-inner">
+              <h5>モニター期間が終了しました</h5>
+              <p>5日間お疲れさまでした。<br>続けて使いたい方は、Re:cheスクール体験会でお話しさせてください。</p>
+              <div class="phone-btn forest">体験会に申し込む</div>
+              <div class="phone-btn muted-btn" style="margin-top:4px;">あとで</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LINE風通知 -->
+      <div>
+        <h3 style="margin-top:0;">朝7時 在庫アラート通知（LINE風）</h3>
+        <div class="notif">
+          <div class="notif-header">
+            <div class="notif-icon">Re</div>
+            <div class="notif-app">Re:sellerアシスタント</div>
+            <div class="notif-time">7:00</div>
+          </div>
+          <div class="notif-body">
+            おはようございます。<br>
+            <b>30日以上滞留している在庫が3点</b>あります。<br>
+            値下げ提案を見にきてください。
+          </div>
+        </div>
+        <div class="notif">
+          <div class="notif-header">
+            <div class="notif-icon">Re</div>
+            <div class="notif-app">Re:sellerアシスタント</div>
+            <div class="notif-time">7:00</div>
+          </div>
+          <div class="notif-body">
+            目標まで <b>あと8点</b> です。<br>
+            未出品の在庫が5点あります。<br>
+            今日2点出品すれば達成ペース。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 6機能 -->
+  <section id="features">
+    <h2><span class="num">04</span>6機能の詳細</h2>
+    <p class="muted">美里さん5要望（出品文・写真加工・価格診断・出品診断・在庫アラート）＋GPTs統合（履歴・分析）。</p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="card-num">01</span>
+        <h4>出品文自動生成</h4>
+        <div class="io">
+          <b>入力：</b>画像 or テキスト or リシュコレURL<br>
+          <b>出力：</b>タイトル40字／説明文／オススメポイント／コーデ提案／ハッシュタグ／注意事項
+        </div>
+        <p class="muted small" style="margin-top:8px;">モデルアカウント6つのスタイルをfew-shot学習</p>
+      </div>
+
+      <div class="card">
+        <span class="card-num">02</span>
+        <h4>写真加工・背景削除</h4>
+        <div class="io">
+          <b>入力：</b>写真アップロード（複数枚OK）<br>
+          <b>出力：</b>背景白化済み画像（remove.bg API）
+        </div>
+        <p class="muted small" style="margin-top:8px;">瀬楽ちかこさん基準で「もっと寄りで」など追加アドバイス</p>
+      </div>
+
+      <div class="card">
+        <span class="card-num">03</span>
+        <h4>価格診断</h4>
+        <div class="io">
+          <b>入力：</b>商品名／カテゴリ／状態<br>
+          <b>出力：</b>「早く売りたい／相場／美品」3パターン＋送料考慮の推奨価格
+        </div>
+        <p class="muted small" style="margin-top:8px;">メルカリ類似商品の相場帯を反映（推測：類似検索ベース）</p>
+      </div>
+
+      <div class="card">
+        <span class="card-num">04</span>
+        <h4>出品診断</h4>
+        <div class="io">
+          <b>入力：</b>既存出品のスクリーンショット<br>
+          <b>出力：</b>改善点5項目（タイトル／写真／価格／説明／ハッシュタグ）
+        </div>
+        <p class="muted small" style="margin-top:8px;">南雲さんの「タイトル40字・損切り・再出品」原則を判断基準に</p>
+      </div>
+
+      <div class="card">
+        <span class="card-num">05</span>
+        <h4>在庫アラート</h4>
+        <div class="io">
+          <b>入力：</b>スプシ連動（自動取得）<br>
+          <b>出力：</b>滞留損切り推奨／未出品の早急出品推奨／月利目標までの必要販売数
+        </div>
+        <p class="muted small" style="margin-top:8px;">朝7時のプッシュ通知でリマインド</p>
+      </div>
+
+      <div class="card">
+        <span class="card-num">06</span>
+        <h4>履歴・分析</h4>
+        <div class="io">
+          <b>入力：</b>過去の利用ログ<br>
+          <b>出力：</b>出品一覧／利用統計／販売成績／改善トレンド
+        </div>
+        <p class="muted small" style="margin-top:8px;">生徒は永続、モニターは30日保存（入会で引き継ぎ）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. モデルアカウント -->
+  <section id="models">
+    <h2><span class="num">05</span>6つのモデルアカウント（学習素材）</h2>
+    <p>くみこさん厳選の月利10〜30万到達アカウント。各タイプから直近20〜30件のタイトル・説明文・価格・写真スタイルを抽出してfew-shot promptへ組込む。</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>プロフID</th>
+            <th>担当</th>
+            <th>カテゴリ</th>
+            <th>月利</th>
+            <th>役割</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>207831718</td>
+            <td>（名前未確認）</td>
+            <td>ブランド小物</td>
+            <td>約10万</td>
+            <td>高単価カテゴリ攻略型</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>605576199</td>
+            <td>南雲さん（講師）</td>
+            <td>アパレル</td>
+            <td>10-15万</td>
+            <td>回転重視・仕入れ判断</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>600961184</td>
+            <td>（名前未確認）</td>
+            <td>ブランド小物・アパレル</td>
+            <td>約15万</td>
+            <td>複合カテゴリ型</td>
+          </tr>
+          <tr class="reco">
+            <td>4</td>
+            <td>860248167</td>
+            <td><strong>宮島美里さん</strong></td>
+            <td>アパレル（BO＆スマセル仕入れ）</td>
+            <td><strong>20-30万（最高）</strong></td>
+            <td><strong>ベンチマーク・常時参照</strong></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>140386961</td>
+            <td>みなこさん</td>
+            <td>YBA仕入れ</td>
+            <td>約20万</td>
+            <td>YBA活用型</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>435053905</td>
+            <td>瀬楽ちかこさん</td>
+            <td>アパレル・小物</td>
+            <td>10-20万</td>
+            <td>写真スタイル特化</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>タイプ分散構造</h3>
+    <ul>
+      <li><b>高単価ブランド系：</b>アカウント1, 3</li>
+      <li><b>高回転アパレル系：</b>アカウント2（南雲さん）, 4（美里さん）</li>
+      <li><b>YBA活用型：</b>アカウント5（みなこさん）</li>
+      <li><b>写真スタイル特化：</b>アカウント6（瀬楽ちかこさん）</li>
+      <li><b>最大利益ベンチマーク：</b>アカウント4（美里さん） ← 生徒の目標値設定にも使用</li>
+    </ul>
+
+    <p class="muted">生徒が在庫を入力 → カテゴリ判定 → 該当タイプのモデルアカウント学習データを自動選択 → タイトル／説明文を生成。</p>
+  </section>
+
+  <!-- 6. スプシ連動 -->
+  <section id="sheets">
+    <h2><span class="num">06</span>Googleスプシ連動フロー</h2>
+    <p>既存生徒5名のスプシ全部同テンプレ確認済（gid=274363400）。新規生徒も同テンプレを使うため、追加開発は不要。</p>
+
+    <h3>スプシ列構造（既存テンプレ準拠）</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>列</th><th>項目</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>A〜D</td><td>番号 / 商品名 / 売れたら✔︎ / 仕入先</td><td>基本情報</td></tr>
+          <tr><td>E〜H</td><td>仕入単価 / 予想売価 / 販売価格 / 在庫金額</td><td>金額（予想売価をAIが書込）</td></tr>
+          <tr><td>I〜M</td><td>販路 / 手数料％ / 手数料 / 消費税 / 送料</td><td>販売条件</td></tr>
+          <tr><td>N〜P</td><td>出品日 / 販売日 / 販売曜日</td><td>タイミング（販売日を検知）</td></tr>
+          <tr><td>Q〜T</td><td>販売月 / 振込金額 / 純利益 / 利益率</td><td>結果分析</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>連動フロー</h3>
+    <div class="flow">
+      <div class="flow-step"><b>STEP 1</b>商品名＋仕入単価<br>を入力</div>
+      <div class="flow-step"><b>STEP 2</b>該当行を<br>自動読取</div>
+      <div class="flow-step"><b>STEP 3</b>Claude APIで<br>4要素生成</div>
+      <div class="flow-step"><b>STEP 4</b>予想売価列に<br>自動書戻し</div>
+      <div class="flow-step"><b>STEP 5</b>販売日検知で<br>次アドバイス</div>
+    </div>
+    <p class="muted small">生成4要素：タイトル／説明文／予想売価／ハッシュタグ。販売日入力検知後のアドバイス：値下げ提案／類似品の出品推奨。</p>
+
+    <h3>初回設定手順（生徒の作業1回のみ）</h3>
+    <div class="notice">
+      <b>1.</b> 自分のスプシを開く<br>
+      <b>2.</b> 右上「共有」→ メールアドレス入力欄に <code>merone-bot@xxx.iam.gserviceaccount.com</code> を入力（推測：実IDはデプロイ時に確定）<br>
+      <b>3.</b> 「編集者」権限を選択して「送信」<br>
+      <b>4.</b> Re:sellerアシスタントの設定画面で「スプシURL」を貼り付け<br>
+      <b>5.</b> 接続完了。以降は商品名を入れるだけで予想売価が自動入力される
+    </div>
+    <p class="muted small">サービスアカウント方式のため、生徒は1回設定するだけで永続的に同期される。OAuthログインフローは不要。</p>
+  </section>
+
+  <!-- 7. 分岐ロジック -->
+  <section id="logic">
+    <h2><span class="num">07</span>モニター/生徒分岐ロジック</h2>
+    <p>URLドメインで完全分離するため、フロント側で版判定は不要。残り日数・ロック判定はバックエンドで管理する。</p>
+
+    <h3>判定ロジック（疑似コード）</h3>
+    <div class="code">
+<span class="com">// Cloudflare Workers 側</span>
+<span class="key">function</span> checkAccess(user) {
+  <span class="key">if</span> (user.type === <span class="str">"student"</span>) {
+    <span class="key">return</span> { allowed: <span class="str">true</span>, dailyLimit: <span class="str">null</span> };
+  }
+  <span class="key">if</span> (user.type === <span class="str">"monitor"</span>) {
+    <span class="key">const</span> elapsedDays = (now - user.registeredAt) / DAY;
+    <span class="key">if</span> (elapsedDays &gt;= <span class="str">5</span>) {
+      <span class="key">return</span> { allowed: <span class="str">false</span>, reason: <span class="str">"expired"</span> };
+    }
+    <span class="key">if</span> (user.todayUsage &gt;= <span class="str">5</span>) {
+      <span class="key">return</span> { allowed: <span class="str">false</span>, reason: <span class="str">"daily_limit"</span> };
+    }
+    <span class="key">return</span> { allowed: <span class="str">true</span>, dailyLimit: <span class="str">5</span> };
+  }
+}
+    </div>
+
+    <h3>体験会誘導モーダル（モニター期限切れ時）</h3>
+    <div class="modal-mock" style="max-width:360px;">
+      <div class="modal-inner">
+        <h5>モニター期間が終了しました</h5>
+        <p>5日間お疲れさまでした。<br>続けて使いたい方は、Re:cheスクールの体験会でお話しさせてください。</p>
+        <div class="phone-btn forest">体験会に申し込む</div>
+        <div class="phone-btn muted-btn" style="margin-top:4px;">あとで</div>
+      </div>
+    </div>
+    <p class="muted small">「あとで」を選んでもボタン操作のたびにモーダル再表示。30日後にデータ削除予告。</p>
+  </section>
+
+  <!-- 8. アラート -->
+  <section id="alert">
+    <h2><span class="num">08</span>アラート機能の動作例</h2>
+    <p>朝7時のCronトリガー（Cloudflare Workers）でスプシを走査し、3条件にヒットしたユーザーへLINE通知（LIFF経由）。</p>
+
+    <h3>3つの判定ルール</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>判定</th><th>条件</th><th>通知文例</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>滞留損切り推奨</td>
+            <td>出品日から30日経過＋未販売</td>
+            <td>30日以上滞留している在庫が3点あります。値下げ提案を見にきてください。</td>
+          </tr>
+          <tr>
+            <td>未出品の早急出品推奨</td>
+            <td>仕入後7日経過＋出品日空欄</td>
+            <td>仕入れて7日以上経った未出品の在庫が5点あります。今日中に出品しましょう。</td>
+          </tr>
+          <tr>
+            <td>月利目標までの必要販売数</td>
+            <td>月利目標値＋今月の純利益累計</td>
+            <td>目標まで あと8点 です。今日2点出品すれば達成ペース。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>朝7時の通知サンプル</h3>
+    <div class="notif">
+      <div class="notif-header">
+        <div class="notif-icon">Re</div>
+        <div class="notif-app">Re:sellerアシスタント</div>
+        <div class="notif-time">7:00</div>
+      </div>
+      <div class="notif-body">
+        おはようございます。<br>
+        <b>30日以上滞留している在庫が3点</b>あります。<br>
+        値下げ提案を見にきてください。
+      </div>
+    </div>
+    <div class="notif">
+      <div class="notif-header">
+        <div class="notif-icon">Re</div>
+        <div class="notif-app">Re:sellerアシスタント</div>
+        <div class="notif-time">7:00</div>
+      </div>
+      <div class="notif-body">
+        目標まで <b>あと8点</b> です。<br>
+        未出品の在庫が5点あります。<br>
+        今日2点出品すれば達成ペース。
+      </div>
+    </div>
+    <p class="muted small">通知の積み上げを防ぐため、同一ユーザーに同種通知は1日1回まで。</p>
+  </section>
+
+  <!-- 9. 技術構成 -->
+  <section id="stack">
+    <h2><span class="num">09</span>技術構成図</h2>
+
+    <h3>レイヤー構成</h3>
+    <div class="stack">
+      <div class="stack-layer">
+        <span class="layer-label">FRONTEND</span>
+        <div class="layer-name">GitHub Pages</div>
+        <div class="layer-sub">生徒/モニターの2ドメイン<br>LIFF（LINE連携）</div>
+      </div>
+      <div class="stack-layer">
+        <span class="layer-label">EDGE</span>
+        <div class="layer-name">Cloudflare Workers</div>
+        <div class="layer-sub">APIゲートウェイ<br>認証・課金・Cron</div>
+      </div>
+      <div class="stack-layer">
+        <span class="layer-label">AI</span>
+        <div class="layer-name">Claude API</div>
+        <div class="layer-sub">出品文生成・診断<br>few-shot学習データ反映</div>
+      </div>
+      <div class="stack-layer">
+        <span class="layer-label">DB</span>
+        <div class="layer-name">Supabase</div>
+        <div class="layer-sub">ユーザー・履歴<br>無料枠で運用</div>
+      </div>
+      <div class="stack-layer">
+        <span class="layer-label">SHEETS</span>
+        <div class="layer-name">Google Sheets API</div>
+        <div class="layer-sub">サービスアカウント認証<br>生徒スプシの読み書き</div>
+      </div>
+      <div class="stack-layer">
+        <span class="layer-label">IMAGE</span>
+        <div class="layer-name">remove.bg API</div>
+        <div class="layer-sub">背景白化<br>$9/月の定額</div>
+      </div>
+    </div>
+
+    <h3>データの流れ</h3>
+    <div class="flow" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="flow-step"><b>USER</b>スマホブラウザ<br>(LIFF)</div>
+      <div class="flow-step"><b>EDGE</b>Cloudflare<br>Workers</div>
+      <div class="flow-step"><b>AI</b>Claude API<br>+ Sheets API</div>
+      <div class="flow-step"><b>STORE</b>Supabase<br>+ Google Sheets</div>
+    </div>
+  </section>
+
+  <!-- 10. タイムライン -->
+  <section id="timeline">
+    <h2><span class="num">10</span>開発タイムライン（10日間）</h2>
+    <div class="timeline">
+      <div class="tl-row"><div class="tl-day">DAY 1</div><div>環境構築（GitHub Pages 2ドメイン作成・Cloudflare Workers 初期化・Supabase スキーマ設計）</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 2</div><div>モデルアカウント6つの出品データ収集＋few-shot prompt 設計</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 3</div><div>機能01 出品文自動生成（テキスト入力 → タイトル/説明/ハッシュタグ）実装</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 4</div><div>機能02 写真加工（remove.bg連携）＋機能03 価格診断 実装</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 5</div><div>機能04 出品診断（スクショ → 5項目改善点）実装</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 6</div><div>Google Sheets API 連動（サービスアカウント認証・予想売価書戻し）</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 7</div><div>機能05 在庫アラート＋朝7時 Cron＋LIFF通知</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 8</div><div>機能06 履歴・分析＋モニター/生徒の分岐ロジック＋期限切れモーダル</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 9</div><div>美里さん＋くみこさんで内部テスト（実商品で全機能動作確認）</div></div>
+      <div class="tl-row"><div class="tl-day">DAY 10</div><div>修正＋本番デプロイ＋モニター100人へ案内</div></div>
+    </div>
+    <p class="muted small">DAY 9 のテストで致命的修正が出た場合、DAY 10 をバッファとして調整。それでも間に合わない場合はDAY 11-12 で対応（推測：くみこさん判断）。</p>
+  </section>
+
+  <!-- 11. コスト -->
+  <section id="cost">
+    <h2><span class="num">11</span>コスト試算</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>料金</th><th>備考</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Claude API</td>
+            <td>$50〜$100 / 5日</td>
+            <td>モニター100人×平均利用想定（推測：1人あたり10〜20リクエスト/日）</td>
+          </tr>
+          <tr>
+            <td>remove.bg</td>
+            <td>$9 / 月</td>
+            <td>定額プラン</td>
+          </tr>
+          <tr>
+            <td>Cloudflare Workers</td>
+            <td>$0</td>
+            <td>無料枠（10万req/日）で十分</td>
+          </tr>
+          <tr>
+            <td>Supabase</td>
+            <td>$0</td>
+            <td>無料枠（500MB / 50,000MAU）で十分</td>
+          </tr>
+          <tr>
+            <td>GitHub Pages</td>
+            <td>$0</td>
+            <td>無料</td>
+          </tr>
+          <tr>
+            <td>Google Sheets API</td>
+            <td>$0</td>
+            <td>無料（100秒あたり300req上限内で運用）</td>
+          </tr>
+          <tr class="reco">
+            <td><strong>月額合計（モニター期）</strong></td>
+            <td><strong>$60〜$110</strong></td>
+            <td>5日間の集中利用＋通常稼働の合計目安</td>
+          </tr>
+          <tr>
+            <td>モニター終了後の通常運用</td>
+            <td>$30〜$50 / 月（推測）</td>
+            <td>生徒のみの利用に縮小</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 12. リスク -->
+  <section id="risk">
+    <h2><span class="num">12</span>リスクと対策</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>リスク</th><th>影響</th><th>対策</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>メルカリ規約変更で外部ツール利用がNGになる</td>
+            <td>サービス停止リスク</td>
+            <td>API直接叩きはせず、生徒の手元出品支援に限定。仕様変更を月次でモニター</td>
+          </tr>
+          <tr>
+            <td>モデルアカウントの写真著作権</td>
+            <td>学習データ提供者からの異議</td>
+            <td>本人（美里さん・南雲さん・瀬楽ちかこさん・みなこさん）から事前許諾取得。学習はスタイル抽出のみで画像は保存しない</td>
+          </tr>
+          <tr>
+            <td>スプシ認証エラー（共有設定漏れ）</td>
+            <td>生徒の初回離脱</td>
+            <td>設定画面で接続テストボタンを実装し、エラー文言を具体化（「共有先メールが○○ですか？」）</td>
+          </tr>
+          <tr>
+            <td>Claude APIコスト超過</td>
+            <td>$100超え</td>
+            <td>モニター版1日5商品制限＋無制限の生徒も月100リクエストでアラート発火</td>
+          </tr>
+          <tr>
+            <td>remove.bg 画像認識ミス</td>
+            <td>写真加工失敗</td>
+            <td>「やり直し」ボタン＋手動でアップ前の画像に戻せる動線</td>
+          </tr>
+          <tr>
+            <td>モニター100人の集客が間に合わない</td>
+            <td>体験会送客数の未達</td>
+            <td>5日リレー方式で 25人×4枠 などに分割可能な設計にしておく（推測：くみこさん判断）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 13. 次のアクション -->
+  <section id="next">
+    <h2><span class="num">13</span>次のアクション</h2>
+    <div class="action">
+      <h3>くみこさんへ</h3>
+      <ol>
+        <li>本設計書を一読 → 「OK／要修正」を判断</li>
+        <li>OKなら DAY 1 着手（環境構築）開始</li>
+        <li>美里さん・南雲さん・瀬楽ちかこさん・みなこさんへ「学習素材提供・写真スタイル参照」の許諾依頼（テンプレ別途用意）</li>
+        <li>DAY 9 の内部テスト日程を確定（美里さん同席で）</li>
+        <li>モニター100人の募集動線（プロLINE／Re:cheスクール／Slack）を並走で確定</li>
+      </ol>
+      <p style="font-size:13px; opacity:0.9; margin-top:10px;">所要時間：レビュー15〜30分。修正点があればコメントで返答 → 即対応します。</p>
+    </div>
+
+    <h3>未決事項（要くみこさん判断）</h3>
+    <ul>
+      <li>サービスアカウントのメールアドレス確定（プロジェクト名）</li>
+      <li>モニター100人の集客タイミング（5日連続か分散か）</li>
+      <li>体験会誘導モーダルの文言（「あとで」を残すか強制誘導か）</li>
+      <li>月利目標値の入力UI（生徒任意か必須か）</li>
+    </ul>
+  </section>
+
+  <p class="muted center small" style="margin-top:30px;">— Re:sellerアシスタント 設計書 / Merone プロモーション事業部 —</p>
+
+</div>
+
+</body>
+</html>
