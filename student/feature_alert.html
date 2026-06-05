@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在庫アラート | Re:sellerアシスタント</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-student">Re:cheスクール会員</span>
+  </header>
+
+  <div class="container">
+    <a href="app.html" class="back-link">← ホームへ戻る</a>
+    <h2 class="page-title">在庫アラート</h2>
+    <p class="page-lead">あなたのスプレッドシートを毎朝7時にスキャンして、滞留在庫と未出品の在庫、月利目標までの差分をお伝えします。</p>
+
+    <div class="section">
+      <div class="subtitle">今日のアラート</div>
+
+      <div class="alert-card urgent">
+        <div class="alert-head">
+          <div class="alert-title">滞留損切り推奨</div>
+          <div class="alert-count">3 件</div>
+        </div>
+        <ul class="alert-list">
+          <li><b>UNIQLO カシミヤニット Lサイズ</b> ／ 出品から 38 日 ／ ¥3,200<br><span class="text-muted">¥2,680 への値下げを推奨</span></li>
+          <li><b>無印良品 トートバッグ ベージュ</b> ／ 出品から 32 日 ／ ¥2,500<br><span class="text-muted">¥2,180 への値下げを推奨</span></li>
+          <li><b>ZARA ジャケット ブラック S</b> ／ 出品から 31 日 ／ ¥4,800<br><span class="text-muted">¥4,280 への値下げを推奨</span></li>
+        </ul>
+      </div>
+
+      <div class="alert-card warn">
+        <div class="alert-head">
+          <div class="alert-title">早急に出品推奨</div>
+          <div class="alert-count">5 件</div>
+        </div>
+        <ul class="alert-list">
+          <li><b>BEAMS BOY ワンピース</b> ／ 仕入から 9 日 ／ 仕入¥1,200</li>
+          <li><b>SLY ニット ベージュ M</b> ／ 仕入から 8 日 ／ 仕入¥800</li>
+          <li><b>Ungrid デニム 27インチ</b> ／ 仕入から 8 日 ／ 仕入¥1,500</li>
+          <li><b>GU シャツ Mサイズ</b> ／ 仕入から 7 日 ／ 仕入¥500</li>
+          <li><b>nano universe コート S</b> ／ 仕入から 7 日 ／ 仕入¥2,000</li>
+        </ul>
+      </div>
+
+      <div class="alert-card warn">
+        <div class="alert-head">
+          <div class="alert-title">月利目標までの差分</div>
+          <div class="alert-count">あと 8 点</div>
+        </div>
+        <ul class="alert-list">
+          <li>今月の純利益：<b>¥98,200</b> ／ 目標：<b>¥150,000</b></li>
+          <li>1点平均利益：<b>¥6,480</b>（直近10件）</li>
+          <li>残り日数：<b>9 日</b> ／ 必要販売数：<b>あと 8 点</b></li>
+          <li>今日 2 点出品すれば達成ペースに乗ります</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="subtitle">通知設定</div>
+      <div class="form-group">
+        <label>朝のお知らせ受け取り時間</label>
+        <select class="form-control">
+          <option>6:30</option>
+          <option selected>7:00</option>
+          <option>7:30</option>
+          <option>8:00</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>受け取り方法</label>
+        <select class="form-control">
+          <option selected>LINE通知（推奨）</option>
+          <option>アプリ内のみ</option>
+        </select>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="alert('通知設定を保存しました')">保存する</button>
+    </div>
+
+    <div class="notice">
+      <b>ヒント</b>：30日以上滞留している在庫を1点でも動かすと、ウォッチリストの再生率が上がって他の出品にも良い影響が出ます。
+    </div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('スプシ連動が完了していれば、毎朝7時に自動でアラートが届きます。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>requireLogin();</script>
+</body>
+</html>

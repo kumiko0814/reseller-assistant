@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>在庫アラート | Re:sellerアシスタント モニター版</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-monitor">モニター版</span>
+  </header>
+
+  <div class="countdown-bar" id="cd-bar">
+    <span>残り <b id="cd-remain">--</b></span>
+    <span id="usage-text">本日 0/5 件</span>
+  </div>
+
+  <div class="container">
+    <a href="app.html" class="back-link">← ホームへ戻る</a>
+    <h2 class="page-title">在庫アラート</h2>
+    <p class="page-lead">スプレッドシートをモニター期間中は毎朝7時にスキャンして、滞留・未出品・目標差分をお伝えします。</p>
+
+    <div class="notice">
+      <b>モニター版限定</b>：在庫アラートはサンプルデータでの表示です。スプシ連動はRe:cheスクールご入会後にご案内します。
+    </div>
+
+    <div class="section">
+      <div class="subtitle">サンプル：今日のアラート</div>
+
+      <div class="alert-card urgent">
+        <div class="alert-head">
+          <div class="alert-title">滞留損切り推奨</div>
+          <div class="alert-count">3 件</div>
+        </div>
+        <ul class="alert-list">
+          <li><b>UNIQLO カシミヤニット Lサイズ</b> ／ 出品から 38 日 ／ ¥3,200<br><span class="text-muted">¥2,680 への値下げを推奨</span></li>
+          <li><b>無印良品 トートバッグ ベージュ</b> ／ 出品から 32 日 ／ ¥2,500<br><span class="text-muted">¥2,180 への値下げを推奨</span></li>
+          <li><b>ZARA ジャケット ブラック S</b> ／ 出品から 31 日 ／ ¥4,800<br><span class="text-muted">¥4,280 への値下げを推奨</span></li>
+        </ul>
+      </div>
+
+      <div class="alert-card warn">
+        <div class="alert-head">
+          <div class="alert-title">早急に出品推奨</div>
+          <div class="alert-count">5 件</div>
+        </div>
+        <ul class="alert-list">
+          <li><b>BEAMS BOY ワンピース</b> ／ 仕入から 9 日 ／ 仕入¥1,200</li>
+          <li><b>SLY ニット ベージュ M</b> ／ 仕入から 8 日 ／ 仕入¥800</li>
+          <li><b>Ungrid デニム 27インチ</b> ／ 仕入から 8 日 ／ 仕入¥1,500</li>
+          <li><b>GU シャツ Mサイズ</b> ／ 仕入から 7 日 ／ 仕入¥500</li>
+          <li><b>nano universe コート S</b> ／ 仕入から 7 日 ／ 仕入¥2,000</li>
+        </ul>
+      </div>
+
+      <div class="alert-card warn">
+        <div class="alert-head">
+          <div class="alert-title">月利目標までの差分</div>
+          <div class="alert-count">あと 8 点</div>
+        </div>
+        <ul class="alert-list">
+          <li>今月の純利益：<b>¥98,200</b> ／ 目標：<b>¥150,000</b></li>
+          <li>1点平均利益：<b>¥6,480</b>（直近10件）</li>
+          <li>残り日数：<b>9 日</b> ／ 必要販売数：<b>あと 8 点</b></li>
+          <li>今日 2 点出品すれば達成ペースに乗ります</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="subtitle">スプシ連動について</div>
+      <p class="text-muted text-small" style="line-height:1.8;">
+        実データでのアラートを使いたい方は、Re:cheスクールへのご入会後、スプシ共有設定（5分）で利用開始できます。期間中ご質問ある方は、ヘッダーのLINEからお気軽にどうぞ。
+      </p>
+    </div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('モニター版は機能のお試し用です。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+
+  <div class="modal-overlay" id="expired-modal">
+    <div class="modal">
+      <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      <h3>5日間お疲れさまでした</h3>
+      <p>Re:sellerアシスタントのモニター期間が終了しました。続けてお使いになりたい方は、Re:cheスクールの体験会でお話しさせてください。</p>
+      <a class="btn btn-forest" href="#">Re:cheスクール体験会へ</a>
+      <a class="btn btn-line" href="#">個別相談LINEへ</a>
+      <button class="btn btn-mute" onclick="document.getElementById('expired-modal').classList.remove('show');">あとで</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+  requireLogin();
+  function refreshBar() {
+    const used = getUsageToday();
+    document.getElementById('usage-text').textContent = `本日 ${used}/${MONITOR_DAILY_LIMIT} 件`;
+    const r = getMonitorRemaining();
+    if (r === null || r <= 0) {
+      document.getElementById('cd-remain').textContent = '期間終了';
+      document.getElementById('cd-bar').classList.add('expired');
+      showExpiredModal();
+    } else {
+      document.getElementById('cd-remain').textContent = formatRemaining(r);
+    }
+  }
+  refreshBar();
+  setInterval(refreshBar, 1000 * 30);
+</script>
+</body>
+</html>

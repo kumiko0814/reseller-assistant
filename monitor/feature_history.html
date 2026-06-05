@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>履歴を見る | Re:sellerアシスタント モニター版</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-monitor">モニター版</span>
+  </header>
+
+  <div class="countdown-bar" id="cd-bar">
+    <span>残り <b id="cd-remain">--</b></span>
+    <span id="usage-text">本日 0/5 件</span>
+  </div>
+
+  <div class="container">
+    <a href="app.html" class="back-link">← ホームへ戻る</a>
+    <h2 class="page-title">履歴を見る</h2>
+    <p class="page-lead">モニター期間中の利用ログをまとめて確認できます。</p>
+
+    <div class="notice">
+      <b>履歴データの取り扱い</b>：モニター期間終了後も30日間保存されます。Re:cheスクールご入会時に履歴を引き継ぎ可能です。
+    </div>
+
+    <div class="section">
+      <div class="subtitle">期間中の利用統計</div>
+      <div class="stats-row" style="margin-bottom: 8px;">
+        <div class="stat">
+          <div class="stat-label" style="color:var(--sub);">出品文生成</div>
+          <div class="stat-val" style="color:var(--ink);" id="stat-listing">0 回</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label" style="color:var(--sub);">価格診断</div>
+          <div class="stat-val" style="color:var(--ink);" id="stat-price">0 回</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label" style="color:var(--sub);">出品診断</div>
+          <div class="stat-val" style="color:var(--ink);" id="stat-diag">0 回</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="subtitle">作成した出品（モニター期間中）</div>
+      <div class="history-list" id="hist">
+        <p class="text-muted text-small">まだ作成された出品はありません。「出品文を作る」から最初の1点を作ってみてください。</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="subtitle">続けて使いたい方へ</div>
+      <p class="text-muted text-small" style="line-height:1.8; margin-bottom: 14px;">
+        Re:cheスクールに入会すると、Re:sellerアシスタントを在籍中ずっと無料でご利用いただけます。月利10〜30万を実現している先輩の出品スタイルが、そのままAIに反映されています。
+      </p>
+      <a class="btn btn-forest" href="#">Re:cheスクール体験会へ</a>
+    </div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history" class="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('履歴は期間終了後30日間保存されます。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+
+  <div class="modal-overlay" id="expired-modal">
+    <div class="modal">
+      <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      <h3>5日間お疲れさまでした</h3>
+      <p>Re:sellerアシスタントのモニター期間が終了しました。続けてお使いになりたい方は、Re:cheスクールの体験会でお話しさせてください。</p>
+      <a class="btn btn-forest" href="#">Re:cheスクール体験会へ</a>
+      <a class="btn btn-line" href="#">個別相談LINEへ</a>
+      <button class="btn btn-mute" onclick="document.getElementById('expired-modal').classList.remove('show');">あとで</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+  requireLogin();
+
+  function refreshBar() {
+    const used = getUsageToday();
+    document.getElementById('usage-text').textContent = `本日 ${used}/${MONITOR_DAILY_LIMIT} 件`;
+    const r = getMonitorRemaining();
+    if (r === null || r <= 0) {
+      document.getElementById('cd-remain').textContent = '期間終了';
+      document.getElementById('cd-bar').classList.add('expired');
+      showExpiredModal();
+    } else {
+      document.getElementById('cd-remain').textContent = formatRemaining(r);
+    }
+  }
+  refreshBar();
+  setInterval(refreshBar, 1000 * 30);
+
+  // 履歴描画
+  function renderHistory() {
+    const list = getHistory();
+    const counts = { listing: 0, price: 0, diagnosis: 0, photo: 0 };
+    list.forEach(it => { if (counts[it.type] !== undefined) counts[it.type]++; });
+    document.getElementById('stat-listing').textContent = counts.listing + ' 回';
+    document.getElementById('stat-price').textContent = counts.price + ' 回';
+    document.getElementById('stat-diag').textContent = counts.diagnosis + ' 回';
+
+    const histEl = document.getElementById('hist');
+    if (list.length === 0) return;
+    const typeLabel = { listing: '出品文', price: '価格診断', diagnosis: '出品診断', photo: '写真加工' };
+    histEl.innerHTML = list.slice(0, 15).map(it => {
+      const d = new Date(it.at);
+      const date = `${d.getMonth()+1}/${d.getDate()}`;
+      return `
+        <div class="history-item">
+          <div class="history-thumb">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="2"/></svg>
+          </div>
+          <div class="history-info">
+            <div class="history-title">${it.title || '(タイトルなし)'}</div>
+            <div class="history-meta"><span>${date}</span><span>${typeLabel[it.type] || it.type}</span></div>
+          </div>
+          <span class="history-status active">完了</span>
+        </div>
+      `;
+    }).join('');
+  }
+  renderHistory();
+</script>
+</body>
+</html>

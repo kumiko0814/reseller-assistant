@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>出品を診断する | Re:sellerアシスタント</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-student">Re:cheスクール会員</span>
+  </header>
+
+  <div class="container">
+    <a href="app.html" class="back-link">← ホームへ戻る</a>
+    <h2 class="page-title">出品を診断する</h2>
+    <p class="page-lead">既に出品中の商品ページのスクリーンショットをアップロードしてください。AIが改善点を5項目で指摘します。</p>
+
+    <form id="diag-form" onsubmit="event.preventDefault(); runDiag();">
+      <div class="section">
+        <div class="subtitle">出品スクリーンショット</div>
+        <div class="upload-zone" id="upload-zone">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/></svg>
+          <div class="upload-text"><b>スクショを選択</b>（1枚で診断OK）</div>
+          <input type="file" id="upload-input" accept="image/*">
+        </div>
+        <div class="preview-grid" id="preview"></div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label>気になっているポイント（任意）</label>
+          <textarea class="form-control" id="d-concern" placeholder="例：3週間売れない／いいねは付くが買われない">出品して2週間。いいねは8件ついたけど買われない</textarea>
+        </div>
+      </div>
+
+      <button class="btn" type="submit" data-feature-submit>5項目で診断する</button>
+    </form>
+
+    <div id="result-area" style="margin-top: 14px;"></div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('スクショ1枚と気になる点を書くだけ。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+  requireLogin();
+  setupImageUpload('upload-zone', 'upload-input', 'preview');
+
+  function runDiag() {
+    mockProcess('#result-area', 2200, () => {
+      const items = [
+        { cat: 'タイトル', body: '現在のタイトルは <b>28文字</b> です。40文字上限まで <b>12文字の余白</b>があります。「ベージュ」「Mサイズ」「タグあり」のような検索キーワードを追加すると、検索ヒット率が約 <b>1.6倍</b> に上がります。' },
+        { cat: '写真', body: '1枚目が床置きで影が入っています。<b>白背景＋正面アップ</b>に差し替えると、サムネクリック率が約 <b>1.4倍</b> 上がります。マネキン or 着用カットを2枚目に入れると◎。' },
+        { cat: '価格', body: '同型番の直近30日の販売は ¥4,500〜¥5,800 帯。現在 <b>¥6,480</b> はやや強気で、いいねは増えても成約に至りにくい価格です。¥5,480 へ調整、または1週間後に ¥300 下げを推奨します。' },
+        { cat: '説明文', body: '本文に「サイズ感」「着用シーン」「保管状態」の記述がありません。これらを3行追加すると、コメント率が約 <b>2倍</b> になり購入確度が上がります。' },
+        { cat: 'ハッシュタグ', body: '現在 <b>3個</b>。メルカリは10個まで設定可能です。残り7個に「秋冬」「オフィスカジュアル」「韓国っぽ」「ZARA好きさんと繋がりたい」など <b>属性タグ</b> を入れると、新規ユーザーへの露出が約 <b>1.8倍</b> になります。' }
+      ];
+      const html = items.map((it, i) => `
+        <div class="diag-item">
+          <div class="diag-head">
+            <span class="diag-num">${i+1}</span>
+            <span class="diag-cat">${it.cat}</span>
+          </div>
+          <div class="diag-body">${it.body}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('result-area').innerHTML = `
+        <div class="result">
+          <div class="result-label">出品診断 5項目</div>
+          <p class="text-muted text-small">気になっているポイント「${document.getElementById('d-concern').value || '指定なし'}」を反映しました。</p>
+          <div class="diag-list">${html}</div>
+
+          <div class="result-block" style="margin-top: 14px;">
+            <h5>総合スコア</h5>
+            <div class="result-text"><b>62 / 100 点</b>
+1〜2の項目だけ直せば、ほぼ確実に1週間以内に成約まで持っていけます。優先度は タイトル → 1枚目の写真 → 価格 の順です。</div>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="location.href='app.html'">ホームへ戻る</button>
+      `;
+      addHistory({ type: 'diagnosis', title: '出品診断 1件' });
+    });
+  }
+</script>
+</body>
+</html>

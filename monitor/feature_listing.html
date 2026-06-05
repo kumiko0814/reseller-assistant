@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>出品文を作る | Re:sellerアシスタント モニター版</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-monitor">モニター版</span>
+  </header>
+
+  <div class="countdown-bar" id="cd-bar">
+    <span>残り <b id="cd-remain">--</b></span>
+    <span id="usage-text">本日 0/5 件</span>
+  </div>
+
+  <div class="container">
+    <a href="app.html" class="back-link">← ホームへ戻る</a>
+    <h2 class="page-title">出品文を作る</h2>
+    <p class="page-lead">商品画像と基本情報を入れるだけで、AIがタイトル・説明文・ハッシュタグまでまとめて作成します。</p>
+
+    <div class="usage-pill" id="usage-pill">本日あと <span id="remain-cnt">5</span> 件まで</div>
+
+    <form id="listing-form" onsubmit="event.preventDefault(); runListing();">
+      <div class="section">
+        <div class="subtitle">商品画像</div>
+        <div class="upload-zone" id="upload-zone">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v12"/><path d="M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>
+          <div class="upload-text"><b>画像を選択</b>（複数枚OK・最大6枚）</div>
+          <input type="file" id="upload-input" accept="image/*" multiple>
+        </div>
+        <div class="preview-grid" id="preview"></div>
+      </div>
+
+      <div class="section">
+        <div class="subtitle">基本情報</div>
+        <div class="form-group">
+          <label>ブランド名 <span class="req">必須</span></label>
+          <input class="form-control" type="text" id="f-brand" value="ZARA" required>
+        </div>
+        <div class="form-group">
+          <label>アイテム名 <span class="req">必須</span></label>
+          <input class="form-control" type="text" id="f-item" value="チェスターコート" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>仕入単価（円）</label>
+            <input class="form-control" type="number" id="f-cost" value="1500">
+          </div>
+          <div class="form-group">
+            <label>サイズ</label>
+            <input class="form-control" type="text" id="f-size" value="M">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>状態</label>
+          <select class="form-control" id="f-condition">
+            <option>新品・未使用</option>
+            <option>未使用に近い</option>
+            <option selected>目立った傷や汚れなし</option>
+            <option>やや傷や汚れあり</option>
+            <option>傷や汚れあり</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>付属品・特記事項</label>
+          <textarea class="form-control" id="f-extra">タグあり・裏地キレイ</textarea>
+        </div>
+      </div>
+
+      <button class="btn" type="submit" data-feature-submit>出品文を生成する</button>
+    </form>
+
+    <div id="result-area" style="margin-top: 14px;"></div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('入力欄を埋めて「出品文を生成する」を押してください。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+
+  <div class="modal-overlay" id="expired-modal">
+    <div class="modal">
+      <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      <h3>5日間お疲れさまでした</h3>
+      <p>Re:sellerアシスタントのモニター期間が終了しました。続けてお使いになりたい方は、Re:cheスクールの体験会でお話しさせてください。</p>
+      <a class="btn btn-forest" href="#">Re:cheスクール体験会へ</a>
+      <a class="btn btn-line" href="#">個別相談LINEへ</a>
+      <button class="btn btn-mute" onclick="document.getElementById('expired-modal').classList.remove('show');">あとで</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+  requireLogin();
+  setupImageUpload('upload-zone', 'upload-input', 'preview');
+
+  function refreshBar() {
+    const used = getUsageToday();
+    const remain = MONITOR_DAILY_LIMIT - used;
+    document.getElementById('usage-text').textContent = `本日 ${used}/${MONITOR_DAILY_LIMIT} 件`;
+    document.getElementById('remain-cnt').textContent = remain;
+    const r = getMonitorRemaining();
+    if (r === null || r <= 0) {
+      document.getElementById('cd-remain').textContent = '期間終了';
+      document.getElementById('cd-bar').classList.add('expired');
+      showExpiredModal();
+    } else {
+      document.getElementById('cd-remain').textContent = formatRemaining(r);
+    }
+  }
+  refreshBar();
+  setInterval(refreshBar, 1000 * 30);
+
+  function runListing() {
+    if (!canUseMonitor()) {
+      const r = getMonitorRemaining();
+      if (r !== null && r <= 0) {
+        showExpiredModal();
+      } else {
+        alert('本日の利用枠（5件）を使い切りました。明日また使ってみてください。');
+      }
+      return;
+    }
+    incrementUsage();
+    refreshBar();
+
+    const brand = document.getElementById('f-brand').value.trim();
+    const item = document.getElementById('f-item').value.trim();
+    const size = document.getElementById('f-size').value.trim();
+    const condition = document.getElementById('f-condition').value;
+    const extra = document.getElementById('f-extra').value.trim();
+
+    mockProcess('#result-area', 1800, () => {
+      const title = `${brand} ${item} ${size} ${condition.includes('美') || condition.includes('新') ? '美品' : '良品'} 秋冬 オフィスカジュアル`.substring(0, 40);
+      const desc = `ご覧いただきありがとうございます。
+
+${brand}の${item}（サイズ${size}）です。
+${extra ? extra + '。' : ''}状態は「${condition}」です。
+
+【着用シーン】
+通勤・通学・お出かけにもデイリーに使いやすい一着です。シンプルな色味でボトムスを選ばず、シーズン中はヘビロテで活躍してくれます。
+
+【おすすめポイント】
+・${brand}定番のキレイめシルエットで体型カバーも◎
+・厚すぎず軽い着心地で、屋内移動も快適
+・落ち着いたカラーでオン／オフ両方に対応
+
+【サイズ感】
+普段Mサイズの方にちょうど良い丈感です。インナーにニットを重ねても窮屈感はありません。
+
+お値下げのご相談もお気軽にどうぞ。`;
+      const points = `・${brand}定番アイテム / 普段Mサイズの方にジャストフィット
+・${condition} / タグ確認済み・自宅保管
+・通勤・通学・休日コーデまで幅広く対応`;
+      const hashtags = ['ZARA', 'チェスターコート', '秋冬コーデ', 'オフィスカジュアル', 'きれいめ', 'Mサイズ', '通勤コーデ', 'シンプル'];
+      const notes = `※自宅保管品にご理解いただける方のみご購入をお願いします。
+※即購入歓迎です。お値下げご希望の方はコメントでご相談ください。
+※発送は1〜2日以内を予定しています。`;
+
+      document.getElementById('result-area').innerHTML = `
+        <div class="result">
+          <div class="result-label">AI 生成結果</div>
+          <div class="result-block">
+            <h5>タイトル（${title.length}文字）</h5>
+            <div class="result-text title-result" id="r-title">${title}</div>
+            <button class="copy-btn" onclick="copyText(document.getElementById('r-title').textContent, this)">タイトルをコピー</button>
+          </div>
+          <div class="result-block">
+            <h5>説明文</h5>
+            <div class="result-text" id="r-desc">${desc}</div>
+            <button class="copy-btn" onclick="copyText(document.getElementById('r-desc').textContent, this)">説明文をコピー</button>
+          </div>
+          <div class="result-block">
+            <h5>おすすめポイント</h5>
+            <div class="result-text">${points}</div>
+          </div>
+          <div class="result-block">
+            <h5>ハッシュタグ</h5>
+            <div class="tag-list">${hashtags.map(t => `<span class="hash">#${t}</span>`).join('')}</div>
+            <button class="copy-btn" onclick="copyText('${hashtags.map(t => '#' + t).join(' ')}', this)">ハッシュタグをコピー</button>
+          </div>
+          <div class="result-block">
+            <h5>注意事項テンプレ</h5>
+            <div class="result-text">${notes}</div>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="location.href='app.html'">ホームへ戻る</button>
+      `;
+      addHistory({ type: 'listing', title: title, brand: brand });
+    });
+  }
+</script>
+</body>
+</html>

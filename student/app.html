@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Re:sellerアシスタント | ホーム</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-student">Re:cheスクール会員</span>
+  </header>
+
+  <div class="container">
+
+    <div class="stats-card">
+      <div class="stats-greeting" id="greet">こんにちは、みさとさん</div>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">今月の出品</div>
+          <div class="stat-val">28 点</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">今月の売上</div>
+          <div class="stat-val">¥184,500</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">純利益</div>
+          <div class="stat-val">¥98,200</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">6機能</span>使いたいものを選んでください</div>
+
+      <div class="feature-grid">
+        <a href="feature_listing.html" class="feature-card">
+          <span class="fc-num">01</span>
+          <svg class="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <polyline points="14 3 14 9 20 9"/>
+            <line x1="8" y1="13" x2="16" y2="13"/>
+            <line x1="8" y1="17" x2="14" y2="17"/>
+          </svg>
+          <div class="fc-title">出品文を作る</div>
+          <div class="fc-sub">タイトル・説明文・ハッシュタグ生成</div>
+        </a>
+
+        <a href="feature_photo.html" class="feature-card">
+          <span class="fc-num">02</span>
+          <svg class="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <circle cx="9" cy="11" r="2"/>
+            <path d="M21 15l-5-5L8 18"/>
+          </svg>
+          <div class="fc-title">写真を加工する</div>
+          <div class="fc-sub">背景白化・寄り構図アドバイス</div>
+        </a>
+
+        <a href="feature_price.html" class="feature-card">
+          <span class="fc-num">03</span>
+          <svg class="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <line x1="12" y1="2" x2="12" y2="22"/>
+            <path d="M17 5H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H6"/>
+          </svg>
+          <div class="fc-title">価格を診断する</div>
+          <div class="fc-sub">早売り・相場・美品の3パターン</div>
+        </a>
+
+        <a href="feature_diagnosis.html" class="feature-card">
+          <span class="fc-num">04</span>
+          <svg class="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="16" y1="16" x2="21" y2="21"/>
+            <line x1="11" y1="8" x2="11" y2="14"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+          <div class="fc-title">出品を診断する</div>
+          <div class="fc-sub">既存出品の改善点を5項目</div>
+        </a>
+
+        <a href="feature_alert.html" class="feature-card">
+          <span class="fc-num">05</span>
+          <svg class="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10 21h4"/>
+          </svg>
+          <div class="fc-title">在庫アラート</div>
+          <div class="fc-sub">滞留在庫・目標まで差分</div>
+        </a>
+
+        <a href="feature_history.html" class="feature-card">
+          <span class="fc-num">06</span>
+          <svg class="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 14"/>
+          </svg>
+          <div class="fc-title">履歴を見る</div>
+          <div class="fc-sub">過去の出品と分析</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="subtitle">今日のひとこと</div>
+      <p class="text-muted" style="font-size:13px; line-height:1.8;">
+        美里さんの直近20件を見ると、タイトル冒頭に「ブランド名＋カテゴリ＋色」の順で並べたものが平均1.4倍早く売れています。出品文を作るときに意識してみてください。
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="subtitle">アカウント</div>
+      <button class="btn btn-outline btn-sm" onclick="logout()">ログアウト</button>
+    </div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home" class="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('ヘルプ：使い方は各機能の入力欄に解説があります。困ったらLINE公式へ。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+  const user = requireLogin();
+  if (user && user.name) {
+    document.getElementById('greet').textContent = `こんにちは、${user.name}`;
+  }
+</script>
+</body>
+</html>

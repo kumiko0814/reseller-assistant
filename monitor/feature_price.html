@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>価格を診断する | Re:sellerアシスタント モニター版</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand">Re:sellerアシスタント</div>
+    <span class="badge badge-monitor">モニター版</span>
+  </header>
+
+  <div class="countdown-bar" id="cd-bar">
+    <span>残り <b id="cd-remain">--</b></span>
+    <span id="usage-text">本日 0/5 件</span>
+  </div>
+
+  <div class="container">
+    <a href="app.html" class="back-link">← ホームへ戻る</a>
+    <h2 class="page-title">価格を診断する</h2>
+    <p class="page-lead">類似商品の相場帯から、AIが「早く売りたい・相場・美品」の3パターンで推奨価格をお返しします。</p>
+
+    <div class="usage-pill"><span id="remain-cnt">5</span> 件まで本日ご利用可能</div>
+
+    <form id="price-form" onsubmit="event.preventDefault(); runPrice();">
+      <div class="section">
+        <div class="subtitle">商品情報</div>
+        <div class="form-group">
+          <label>商品名 <span class="req">必須</span></label>
+          <input class="form-control" type="text" id="p-name" value="ZARA チェスターコート ベージュ M" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>カテゴリ</label>
+            <select class="form-control" id="p-cat">
+              <option>レディース / アウター / チェスターコート</option>
+              <option>レディース / トップス / ニット</option>
+              <option>レディース / バッグ / トートバッグ</option>
+              <option>メンズ / アウター</option>
+              <option>その他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>状態</label>
+            <select class="form-control" id="p-cond">
+              <option>新品・未使用</option>
+              <option>未使用に近い</option>
+              <option selected>目立った傷や汚れなし</option>
+              <option>やや傷や汚れあり</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>仕入単価（円）</label>
+            <input class="form-control" type="number" id="p-cost" value="1500">
+          </div>
+          <div class="form-group">
+            <label>送料区分</label>
+            <select class="form-control" id="p-ship">
+              <option selected>らくらくメルカリ便（〜700円）</option>
+              <option>ゆうゆうメルカリ便（〜500円）</option>
+              <option>普通郵便（〜350円）</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" type="submit" data-feature-submit>3パターンで価格を見る</button>
+    </form>
+
+    <div id="result-area" style="margin-top: 14px;"></div>
+  </div>
+
+  <nav class="app-nav">
+    <a href="app.html" data-nav="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+      ホーム
+    </a>
+    <a href="feature_history.html" data-nav="history">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      履歴
+    </a>
+    <a href="#" data-nav="help" onclick="alert('商品名と状態を入れて「3パターンで価格を見る」を押すだけ。'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+      ヘルプ
+    </a>
+  </nav>
+
+  <div class="modal-overlay" id="expired-modal">
+    <div class="modal">
+      <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      <h3>5日間お疲れさまでした</h3>
+      <p>Re:sellerアシスタントのモニター期間が終了しました。続けてお使いになりたい方は、Re:cheスクールの体験会でお話しさせてください。</p>
+      <a class="btn btn-forest" href="#">Re:cheスクール体験会へ</a>
+      <a class="btn btn-line" href="#">個別相談LINEへ</a>
+      <button class="btn btn-mute" onclick="document.getElementById('expired-modal').classList.remove('show');">あとで</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/app.js"></script>
+<script>
+  requireLogin();
+
+  function refreshBar() {
+    const used = getUsageToday();
+    const remain = MONITOR_DAILY_LIMIT - used;
+    document.getElementById('usage-text').textContent = `本日 ${used}/${MONITOR_DAILY_LIMIT} 件`;
+    document.getElementById('remain-cnt').textContent = remain;
+    const r = getMonitorRemaining();
+    if (r === null || r <= 0) {
+      document.getElementById('cd-remain').textContent = '期間終了';
+      document.getElementById('cd-bar').classList.add('expired');
+      showExpiredModal();
+    } else {
+      document.getElementById('cd-remain').textContent = formatRemaining(r);
+    }
+  }
+  refreshBar();
+  setInterval(refreshBar, 1000 * 30);
+
+  function runPrice() {
+    if (!canUseMonitor()) {
+      const r = getMonitorRemaining();
+      if (r !== null && r <= 0) showExpiredModal();
+      else alert('本日の利用枠（5件）を使い切りました。');
+      return;
+    }
+    incrementUsage();
+    refreshBar();
+
+    const name = document.getElementById('p-name').value.trim();
+    const cost = parseInt(document.getElementById('p-cost').value || '0', 10);
+
+    mockProcess('#result-area', 1700, () => {
+      const base = 4980, fast = 3980, high = 6480;
+      const profit = (p) => Math.round(p * 0.9 - 700 - cost);
+
+      document.getElementById('result-area').innerHTML = `
+        <div class="result">
+          <div class="result-label">価格診断結果</div>
+          <p class="text-muted text-small mb-0">対象：${name}<br>類似 32 件の販売実績から算出（直近30日）</p>
+          <div class="price-grid">
+            <div class="price-card">
+              <div>
+                <div class="price-label"><b>早く売りたい</b></div>
+                <div class="price-val">¥${fast.toLocaleString()}</div>
+                <div class="price-note">純利益 約 ¥${profit(fast).toLocaleString()} / 3日以内成約見込み</div>
+              </div>
+            </div>
+            <div class="price-card recommended">
+              <div>
+                <div class="price-label"><b>相場（推奨）</b></div>
+                <div class="price-val">¥${base.toLocaleString()}</div>
+                <div class="price-note">純利益 約 ¥${profit(base).toLocaleString()} / 7〜10日で成約見込み</div>
+              </div>
+            </div>
+            <div class="price-card">
+              <div>
+                <div class="price-label"><b>美品プレミアム</b></div>
+                <div class="price-val">¥${high.toLocaleString()}</div>
+                <div class="price-note">純利益 約 ¥${profit(high).toLocaleString()} / 写真とタグ訴求次第</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-block">
+            <h5>AIコメント</h5>
+            <div class="result-text">同型番は ¥4,500 〜 ¥5,800 の帯で売れていて、サイズMは特に動きが早いです。回転重視なら ¥4,980 スタート、写真と説明文が整っているなら ¥5,480 で1週間様子見もアリです。</div>
+          </div>
+          <div class="result-block">
+            <h5>1週間後の値下げ提案</h5>
+            <div class="result-text">未売却の場合：¥4,980 → ¥4,680（300円下げ）を推奨。ウォッチリスト上位に再浮上しやすくなります。</div>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="location.href='app.html'">ホームへ戻る</button>
+      `;
+      addHistory({ type: 'price', title: name });
+    });
+  }
+</script>
+</body>
+</html>
