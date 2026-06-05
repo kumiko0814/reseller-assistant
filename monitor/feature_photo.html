@@ -5,6 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>写真を加工する | Re:sellerアシスタント モニター版</title>
 <link rel="stylesheet" href="../assets/style.css">
+<style>
+  .photo-unlimited-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f0f7f5;
+    border: 1px solid #c2ddd8;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--accent2);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .ba-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .progress-bar-wrap {
+    background: var(--line);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin: 8px 0 4px;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  .loading-detail {
+    font-size: 12px;
+    color: var(--sub);
+    text-align: center;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+  .single-upload-preview {
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--soft);
+    display: block;
+    margin-top: 12px;
+  }
+  .upload-selected-name {
+    font-size: 12px;
+    color: var(--sub);
+    margin-top: 6px;
+    letter-spacing: 0.02em;
+  }
+  .app-footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--sub);
+    padding: 8px 0 24px;
+    letter-spacing: 0.03em;
+  }
+</style>
 </head>
 <body>
 <div class="app">
@@ -21,25 +85,64 @@
   <div class="container">
     <a href="app.html" class="back-link">← ホームへ戻る</a>
     <h2 class="page-title">写真を加工する</h2>
-    <p class="page-lead">背景を自動で白く加工して、瀬楽ちかこさん基準の「もっと寄りで」アドバイスもセットでお返しします。</p>
+    <p class="page-lead">画像をアップロードするだけで、AIが背景を自動で削除します。ブラウザ内完結・データ送信なし。</p>
 
-    <div class="usage-pill"><span id="remain-cnt">5</span> 件まで本日ご利用可能</div>
+    <div class="photo-unlimited-badge">写真加工は無制限です（回数にカウントしません）</div>
 
-    <form id="photo-form" onsubmit="event.preventDefault(); runPhoto();">
-      <div class="section">
-        <div class="subtitle">加工したい写真</div>
-        <div class="upload-zone" id="upload-zone">
-          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 15l-5-5L8 18"/></svg>
-          <div class="upload-text"><b>写真を選択</b>（複数枚OK・最大6枚）</div>
-          <input type="file" id="upload-input" accept="image/*" multiple>
-        </div>
-        <div class="preview-grid" id="preview"></div>
+    <!-- Step 1: アップロードエリア -->
+    <div id="step-upload" class="section">
+      <div class="subtitle">加工したい写真を選択</div>
+      <div class="upload-zone" id="upload-zone">
+        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 15l-5-5L8 18"/></svg>
+        <div class="upload-text"><b>写真を選択</b>（1枚・JPG / PNG / WebP）</div>
+        <input type="file" id="upload-input" accept="image/*">
       </div>
+      <img id="preview-img" class="single-upload-preview" style="display:none;" alt="プレビュー">
+      <div id="preview-name" class="upload-selected-name"></div>
+    </div>
 
-      <button class="btn" type="submit" data-feature-submit>背景を白く加工する</button>
-    </form>
+    <!-- Step 2: 加工ボタン（画像選択後に表示） -->
+    <div id="step-action" style="display:none;">
+      <button class="btn" id="process-btn" onclick="startProcessing()">背景を削除する</button>
+    </div>
 
-    <div id="result-area" style="margin-top: 14px;"></div>
+    <!-- Step 3: 処理中表示 -->
+    <div id="step-processing" style="display:none; margin-top:14px;">
+      <div class="result" style="text-align:center; padding:24px 16px;">
+        <div class="spinner" style="margin:0 auto 14px;"></div>
+        <div id="processing-label" class="loading-text" style="margin-bottom:8px;">AIモデルを準備しています...</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-inner" id="progress-bar"></div></div>
+        <div class="loading-detail" id="processing-detail">初回のみAIモデルをダウンロードしています。30秒〜1分お待ちください</div>
+      </div>
+    </div>
+
+    <!-- Step 4: 結果表示 -->
+    <div id="step-result" style="display:none; margin-top:14px;">
+      <div class="result">
+        <div class="result-label">加工完了</div>
+        <div class="result-block">
+          <h5>背景削除 Before / After</h5>
+          <div class="ba-grid">
+            <div class="ba-item">
+              <div class="ba-label">BEFORE</div>
+              <div class="ba-image"><img id="before-img" alt="加工前"></div>
+            </div>
+            <div class="ba-item">
+              <div class="ba-label after">AFTER</div>
+              <div class="ba-image after"><img id="after-img" alt="加工後（背景削除）"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="download-btn" onclick="downloadResult()">PNG保存</button>
+      <button class="btn btn-outline" style="margin-top:8px;" onclick="resetAll()">もう一度試す</button>
+    </div>
+
+    <!-- エラー表示 -->
+    <div id="step-error" style="display:none; margin-top:14px;">
+      <div class="notice" id="error-msg"></div>
+      <button class="btn btn-outline" style="margin-top:8px;" onclick="resetAll()">もう一度試す</button>
+    </div>
   </div>
 
   <nav class="app-nav">
@@ -51,7 +154,7 @@
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
       履歴
     </a>
-    <a href="#" data-nav="help" onclick="alert('写真をアップロードして「背景を白く加工する」を押すだけ。'); return false;">
+    <a href="#" data-nav="help" onclick="alert('写真を選択して「背景を削除する」を押すだけ。ブラウザ内で完結します。'); return false;">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
       ヘルプ
     </a>
@@ -67,84 +170,245 @@
       <button class="btn btn-mute" onclick="document.getElementById('expired-modal').classList.remove('show');">あとで</button>
     </div>
   </div>
+
+  <p class="app-footer-note">動作確認はChrome / Safari 最新版で</p>
 </div>
 
 <script src="../assets/app.js"></script>
 <script>
+  // カウントダウンバー表示（写真加工はカウントしない）
   requireLogin();
-  setupImageUpload('upload-zone', 'upload-input', 'preview');
 
   function refreshBar() {
     const used = getUsageToday();
     const remain = MONITOR_DAILY_LIMIT - used;
     document.getElementById('usage-text').textContent = `本日 ${used}/${MONITOR_DAILY_LIMIT} 件`;
-    document.getElementById('remain-cnt').textContent = remain;
+    document.getElementById('remain-cnt') && (document.getElementById('remain-cnt').textContent = remain);
     const r = getMonitorRemaining();
     if (r === null || r <= 0) {
       document.getElementById('cd-remain').textContent = '期間終了';
       document.getElementById('cd-bar').classList.add('expired');
-      showExpiredModal();
+      // 写真加工ページは期限切れでも使えるよう、モーダルは表示しない
     } else {
       document.getElementById('cd-remain').textContent = formatRemaining(r);
     }
   }
   refreshBar();
   setInterval(refreshBar, 1000 * 30);
+</script>
+<script type="module">
+  // WebAssembly 対応チェック
+  if (typeof WebAssembly === 'undefined') {
+    showErrorMsg('お使いのブラウザは対応していません。最新のChrome / Safari / Edgeをご利用ください。');
+  }
 
-  function runPhoto() {
-    if (!canUseMonitor()) {
-      const r = getMonitorRemaining();
-      if (r !== null && r <= 0) showExpiredModal();
-      else alert('本日の利用枠（5件）を使い切りました。');
+  // ---- ファイル選択 ----
+  const zone = document.getElementById('upload-zone');
+  const input = document.getElementById('upload-input');
+  const previewImg = document.getElementById('preview-img');
+  const previewName = document.getElementById('preview-name');
+
+  let selectedFile = null;
+  let resultBlob = null;
+
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = '';
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+
+  input.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) handleFile(f);
+  });
+
+  function handleFile(file) {
+    if (!file.type.startsWith('image/')) {
+      showErrorMsg('画像ファイルを選択してください（JPG / PNG / WebP）。');
       return;
     }
-    incrementUsage();
-    refreshBar();
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      previewImg.src = ev.target.result;
+      previewImg.style.display = 'block';
+      previewName.textContent = file.name + '（' + formatBytes(file.size) + '）';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('step-action').style.display = 'block';
+    document.getElementById('step-result').style.display = 'none';
+    document.getElementById('step-error').style.display = 'none';
+    resultBlob = null;
+  }
 
-    mockProcess('#result-area', 2000, () => {
-      document.getElementById('result-area').innerHTML = `
-        <div class="result">
-          <div class="result-label">加工結果</div>
-          <div class="result-block">
-            <h5>背景白化 完了（Before / After）</h5>
-            <div class="ba-grid">
-              <div class="ba-item">
-                <div class="ba-label">BEFORE</div>
-                <div class="ba-image">
-                  <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="12" width="44" height="40" rx="2" fill="#e6e3dc"/><path d="M30 26v18M22 32l8-6 8 6"/></svg>
-                </div>
-              </div>
-              <div class="ba-item">
-                <div class="ba-label after">AFTER</div>
-                <div class="ba-image after">
-                  <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="2"><path d="M30 18c-4 0-7 3-7 7v18c0 1 1 2 2 2h10c1 0 2-1 2-2V25c0-4-3-7-7-7zM23 30h14"/></svg>
-                </div>
-              </div>
-            </div>
-            <button class="copy-btn">画像をダウンロード</button>
-          </div>
-          <div class="result-block">
-            <h5>写真スタイル診断（瀬楽ちかこさん基準）</h5>
-            <div class="result-text">・全体の構図：ヨリ・ヒキのバランス良好（◎）
-・光：自然光寄りで色味は信頼できる仕上がり
-・改善1：ブランドタグの寄り写真がもう1枚あると安心感が上がります
-・改善2：着用シーン（マネキンorコーデ）を1枚足すと回転率が約1.3倍上がりやすいです
-・改善3：床に直置きより、壁にピン留めの方が形が綺麗に出ます</div>
-          </div>
-          <div class="result-block">
-            <h5>このまま使えるサムネ順</h5>
-            <div class="result-text">1枚目：背景白化した正面アップ（このAI加工版を推奨）
-2枚目：全身またはマネキン着用
-3枚目：素材アップ（質感わかるもの）
-4枚目：ブランドタグの寄り
-5枚目：気になる傷や汚れがあれば誠実に1枚</div>
-          </div>
-        </div>
-        <button class="btn btn-outline" onclick="location.href='app.html'">ホームへ戻る</button>
-      `;
-      addHistory({ type: 'photo', title: '写真加工 1件' });
+  function formatBytes(b) {
+    if (b < 1024 * 1024) return Math.round(b / 1024) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  // ---- 5MB以上はリサイズ ----
+  async function prepareImageBlob(file) {
+    const MAX_SIDE = 1600;
+    const MAX_BYTES = 5 * 1024 * 1024;
+    if (file.size <= MAX_BYTES) return file;
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (w > MAX_SIDE || h > MAX_SIDE) {
+          const ratio = Math.min(MAX_SIDE / w, MAX_SIDE / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error('リサイズに失敗しました'));
+        }, 'image/png');
+      };
+      img.onerror = reject;
+      img.src = url;
     });
   }
+
+  // ---- 処理本体 ----
+  let bgRemovalLib = null;
+
+  async function loadLib() {
+    if (bgRemovalLib) return bgRemovalLib;
+    const CANDIDATES = [
+      'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/dist/index.mjs',
+      'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.9/dist/index.mjs',
+      'https://unpkg.com/@imgly/background-removal@latest/dist/index.mjs'
+    ];
+    for (const url of CANDIDATES) {
+      try {
+        const mod = await import(url);
+        bgRemovalLib = mod;
+        return mod;
+      } catch (e) {
+        console.warn('CDN failed:', url, e.message);
+      }
+    }
+    throw new Error('ライブラリの読み込みに失敗しました。ネットワーク接続を確認してください。');
+  }
+
+  window.startProcessing = async function() {
+    if (!selectedFile) return;
+
+    showStep('processing');
+    setProgress(5, 'AIモデルを準備しています...', '初回のみAIモデルをダウンロードしています。30秒〜1分お待ちください');
+
+    const isCached = localStorage.getItem('photo_models_cached') === 'true';
+    if (isCached) {
+      setProgress(30, 'キャッシュから読み込み中...', 'キャッシュから即読み込みします');
+    }
+
+    try {
+      const lib = await loadLib();
+      setProgress(50, '画像を処理しています...', '背景を分析中...');
+
+      const prepared = await prepareImageBlob(selectedFile);
+      setProgress(70, '背景を削除しています...', 'AIが背景領域を特定しています');
+
+      const resultBlobData = await lib.removeBackground(prepared, {
+        progress: (key, current, total) => {
+          if (total > 0) {
+            const pct = Math.round(50 + (current / total) * 40);
+            setProgress(pct, '背景を削除しています...', `処理中... ${Math.round((current / total) * 100)}%`);
+          }
+        }
+      });
+
+      setProgress(95, '仕上げ処理中...', 'もうすぐ完了します');
+
+      resultBlob = resultBlobData;
+      localStorage.setItem('photo_models_cached', 'true');
+
+      const beforeUrl = URL.createObjectURL(selectedFile);
+      const afterUrl = URL.createObjectURL(resultBlob);
+      document.getElementById('before-img').src = beforeUrl;
+      document.getElementById('after-img').src = afterUrl;
+
+      setProgress(100, '完了しました', '');
+
+      setTimeout(() => {
+        showStep('result');
+        // 写真加工はカウントしない（addHistoryのみ記録）
+        addHistory({ type: 'photo', title: '写真加工（背景削除）' });
+      }, 400);
+
+    } catch (err) {
+      console.error('Background removal error:', err);
+      const msg = err.message || '不明なエラー';
+      if (msg.includes('ライブラリ') || msg.includes('CDN') || msg.includes('import')) {
+        showErrorMsg('ライブラリの読み込みに失敗しました。ネットワーク接続を確認し、最新のChrome / Safari / Edgeでお試しください。');
+      } else {
+        showErrorMsg('処理に失敗しました。別の画像でお試しください。（' + msg + '）');
+      }
+    }
+  };
+
+  window.downloadResult = function() {
+    if (!resultBlob) return;
+    const url = URL.createObjectURL(resultBlob);
+    const a = document.createElement('a');
+    const originalName = selectedFile ? selectedFile.name.replace(/\.[^.]+$/, '') : 'result';
+    a.href = url;
+    a.download = originalName + '_bg-removed.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  };
+
+  window.resetAll = function() {
+    selectedFile = null;
+    resultBlob = null;
+    input.value = '';
+    previewImg.src = '';
+    previewImg.style.display = 'none';
+    previewName.textContent = '';
+    document.getElementById('step-action').style.display = 'none';
+    document.getElementById('step-result').style.display = 'none';
+    document.getElementById('step-error').style.display = 'none';
+    document.getElementById('step-processing').style.display = 'none';
+  };
+
+  function showStep(name) {
+    ['processing', 'result', 'error'].forEach(s => {
+      document.getElementById('step-' + s).style.display = s === name ? 'block' : 'none';
+    });
+    if (name !== 'result') {
+      document.getElementById('step-action').style.display = name === 'processing' ? 'none' : 'block';
+    } else {
+      document.getElementById('step-action').style.display = 'none';
+    }
+  }
+
+  function setProgress(pct, label, detail) {
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('processing-label').textContent = label;
+    document.getElementById('processing-detail').textContent = detail;
+  }
+
+  function showErrorMsg(msg) {
+    document.getElementById('step-error').style.display = 'block';
+    document.getElementById('step-processing').style.display = 'none';
+    document.getElementById('error-msg').innerHTML = '<b>エラー:</b> ' + msg;
+    document.getElementById('step-action').style.display = selectedFile ? 'block' : 'none';
+  }
+
+  // モジュール外から呼べるようグローバルに公開
+  window.showErrorMsg = showErrorMsg;
 </script>
 </body>
 </html>
