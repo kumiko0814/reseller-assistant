@@ -253,9 +253,9 @@
     if (bgRemovalLib) return bgRemovalLib;
     // CDN候補を順番に試す
     const CANDIDATES = [
-      'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/dist/index.mjs',
-      'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.9/dist/index.mjs',
-      'https://unpkg.com/@imgly/background-removal@latest/dist/index.mjs'
+      'https://esm.sh/@imgly/background-removal@1.6.0',
+      'https://esm.sh/@imgly/background-removal@1.5.9',
+      'https://esm.sh/@imgly/background-removal@1.4.5'
     ];
     for (const url of CANDIDATES) {
       try {
