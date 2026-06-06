@@ -68,6 +68,99 @@
     padding: 8px 0 24px;
     letter-spacing: 0.03em;
   }
+  /* ラベル追加セクション */
+  .label-section {
+    margin-top: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .label-section-header {
+    background: #f8f5f4;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f1f1f;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+  .label-section-header .toggle-arrow {
+    font-size: 11px;
+    color: var(--sub);
+    transition: transform 0.2s;
+  }
+  .label-section-header.open .toggle-arrow {
+    transform: rotate(180deg);
+  }
+  .label-section-body {
+    padding: 14px 16px;
+    display: none;
+    background: #fff;
+  }
+  .label-section-body.open {
+    display: block;
+  }
+  .label-field {
+    margin-bottom: 10px;
+  }
+  .label-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sub);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .label-field input,
+  .label-field select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: "游ゴシック", YuGothic, "Hiragino Sans", sans-serif;
+    color: #1f1f1f;
+    background: #fafafa;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .label-field input:focus,
+  .label-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .label-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .label-preview-wrap {
+    margin-top: 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f0f0f0;
+    max-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .label-preview-wrap canvas {
+    max-width: 100%;
+    max-height: 320px;
+    display: block;
+  }
+  .label-btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
 </style>
 </head>
 <body>
@@ -134,7 +227,60 @@
           </div>
         </div>
       </div>
-      <button class="btn" id="download-btn" onclick="downloadResult()">PNG保存</button>
+
+      <!-- ラベル追加セクション -->
+      <div class="label-section">
+        <div class="label-section-header" id="label-header" onclick="toggleLabelSection()">
+          ラベルを追加して保存
+          <span class="toggle-arrow" id="label-arrow">▼</span>
+        </div>
+        <div class="label-section-body" id="label-body">
+          <div class="label-field">
+            <label>状態</label>
+            <select id="lbl-condition">
+              <option value="">-- 選択しない --</option>
+              <option value="未使用">未使用</option>
+              <option value="新品">新品</option>
+              <option value="美品">美品</option>
+              <option value="良品">良品</option>
+              <option value="使用感あり">使用感あり</option>
+            </select>
+          </div>
+          <div class="label-field">
+            <label>ブランド名</label>
+            <input type="text" id="lbl-brand" placeholder="例：ユニクロ">
+          </div>
+          <div class="label-field">
+            <label>アイテム名</label>
+            <input type="text" id="lbl-item" placeholder="例：Tシャツ">
+          </div>
+          <div class="label-field-row">
+            <div class="label-field">
+              <label>サイズ</label>
+              <input type="text" id="lbl-size" placeholder="例：M / 90">
+            </div>
+            <div class="label-field">
+              <label>カラー</label>
+              <input type="text" id="lbl-color" placeholder="例：黒 BLACK">
+            </div>
+          </div>
+          <div class="label-field">
+            <label>価格（円）</label>
+            <input type="number" id="lbl-price" placeholder="例：1200" min="0">
+          </div>
+
+          <div class="label-preview-wrap" id="label-preview-wrap" style="display:none;">
+            <canvas id="label-canvas"></canvas>
+          </div>
+
+          <div class="label-btn-row">
+            <button class="btn btn-outline" onclick="updateLabelPreview()">プレビュー更新</button>
+            <button class="btn" onclick="downloadWithLabel()">ラベル付きで保存</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-outline" style="margin-top:8px;" onclick="downloadResult()">ラベルなしで保存</button>
       <button class="btn btn-outline" style="margin-top:8px;" onclick="resetAll()">もう一度試す</button>
     </div>
 
@@ -381,6 +527,153 @@
     document.getElementById('step-result').style.display = 'none';
     document.getElementById('step-error').style.display = 'none';
     document.getElementById('step-processing').style.display = 'none';
+    // ラベル入力リセット
+    ['lbl-condition', 'lbl-brand', 'lbl-item', 'lbl-size', 'lbl-color', 'lbl-price'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('label-preview-wrap').style.display = 'none';
+    // アコーディオンを閉じる
+    const body = document.getElementById('label-body');
+    const header = document.getElementById('label-header');
+    const arrow = document.getElementById('label-arrow');
+    if (body) body.classList.remove('open');
+    if (header) header.classList.remove('open');
+    if (arrow) arrow.textContent = '▼';
+  };
+
+  // ---- ラベル機能 ----
+  window.toggleLabelSection = function() {
+    const body = document.getElementById('label-body');
+    const header = document.getElementById('label-header');
+    const arrow = document.getElementById('label-arrow');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    header.classList.toggle('open', !isOpen);
+    arrow.textContent = isOpen ? '▼' : '▲';
+    if (!isOpen) {
+      updateLabelPreview();
+    }
+  };
+
+  function getLabelValues() {
+    return {
+      condition: document.getElementById('lbl-condition').value.trim(),
+      brand: document.getElementById('lbl-brand').value.trim(),
+      item: document.getElementById('lbl-item').value.trim(),
+      size: document.getElementById('lbl-size').value.trim(),
+      color: document.getElementById('lbl-color').value.trim(),
+      price: document.getElementById('lbl-price').value.trim()
+    };
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function drawLabels(canvas, labels) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const pad = w * 0.025;
+    const fs = Math.max(Math.round(w * 0.038), 24);
+    const lh = fs * 1.4;
+
+    const lines = [];
+    if (labels.condition) lines.push({ text: `【${labels.condition}】`, color: '#c25b3f', size: Math.round(fs * 1.1), bold: true });
+    if (labels.brand) lines.push({ text: labels.brand, color: '#1f1f1f', size: fs, bold: true });
+
+    const detailParts = [labels.item, labels.size, labels.color].filter(Boolean).join('  ');
+    if (detailParts) lines.push({ text: detailParts, color: '#1f1f1f', size: Math.round(fs * 0.92), bold: false });
+
+    if (labels.price) lines.push({ text: `¥${Number(labels.price).toLocaleString()}`, color: '#1f6f5e', size: Math.round(fs * 1.05), bold: true });
+
+    if (lines.length === 0) return;
+
+    // ボックスサイズ計算
+    let maxTextW = 0;
+    lines.forEach(l => {
+      ctx.font = `${l.bold ? 'bold ' : ''}${l.size}px "游ゴシック", YuGothic, "Hiragino Sans", sans-serif`;
+      const m = ctx.measureText(l.text).width;
+      if (m > maxTextW) maxTextW = m;
+    });
+    const boxW = maxTextW + pad * 2;
+    const boxH = lines.length * lh + pad * 2;
+
+    // 半透明白背景（角丸）
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    roundRect(ctx, pad, pad, boxW, boxH, 8);
+    ctx.fill();
+
+    // 各行描画
+    let y = pad + lh * 0.85;
+    lines.forEach(l => {
+      ctx.font = `${l.bold ? 'bold ' : ''}${l.size}px "游ゴシック", YuGothic, "Hiragino Sans", sans-serif`;
+      ctx.fillStyle = l.color;
+      ctx.fillText(l.text, pad * 1.5, y);
+      y += lh;
+    });
+  }
+
+  async function buildLabeledCanvas() {
+    if (!resultBlob) return null;
+    const labels = getLabelValues();
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(resultBlob);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        drawLabels(canvas, labels);
+        resolve(canvas);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  window.updateLabelPreview = async function() {
+    if (!resultBlob) return;
+    const canvas = await buildLabeledCanvas();
+    if (!canvas) return;
+
+    const previewCanvas = document.getElementById('label-canvas');
+    previewCanvas.width = canvas.width;
+    previewCanvas.height = canvas.height;
+    const ctx = previewCanvas.getContext('2d');
+    ctx.drawImage(canvas, 0, 0);
+
+    document.getElementById('label-preview-wrap').style.display = 'flex';
+  };
+
+  window.downloadWithLabel = async function() {
+    if (!resultBlob) return;
+    const canvas = await buildLabeledCanvas();
+    if (!canvas) return;
+
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const originalName = selectedFile ? selectedFile.name.replace(/\.[^.]+$/, '') : 'result';
+      a.href = url;
+      a.download = originalName + '_labeled.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    }, 'image/png');
   };
 
   function showStep(name) {
