@@ -161,6 +161,124 @@
     gap: 8px;
     margin-top: 12px;
   }
+  /* 仕上げ調整セクション */
+  .finish-section {
+    margin-top: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .finish-section-header {
+    background: #f4f8f7;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f1f1f;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+  .finish-section-body {
+    padding: 14px 16px;
+    display: none;
+    background: #fff;
+  }
+  .finish-section-body.open {
+    display: block;
+  }
+  .finish-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .finish-row:last-of-type {
+    margin-bottom: 4px;
+  }
+  .finish-toggle-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f1f1f;
+    min-width: 80px;
+    white-space: nowrap;
+  }
+  .finish-range-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .finish-range-wrap input[type="range"] {
+    flex: 1;
+    height: 4px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .finish-range-val {
+    font-size: 12px;
+    color: var(--sub);
+    min-width: 32px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .finish-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+  .finish-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .finish-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #ccc;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .finish-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .finish-toggle input:checked + .finish-toggle-slider {
+    background: var(--accent);
+  }
+  .finish-toggle input:checked + .finish-toggle-slider::before {
+    transform: translateX(18px);
+  }
+  .finish-note {
+    font-size: 11px;
+    color: var(--sub);
+    margin-top: 8px;
+    letter-spacing: 0.02em;
+  }
+  .finish-shadow-detail {
+    display: none;
+    padding: 4px 0 0 90px;
+  }
+  .finish-shadow-detail.visible {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .finish-range-hint {
+    font-size: 11px;
+    color: #bbb;
+    white-space: nowrap;
+  }
 </style>
 </head>
 <body>
@@ -228,6 +346,42 @@
         </div>
       </div>
 
+      <!-- 仕上げ調整セクション -->
+      <div class="finish-section">
+        <div class="finish-section-header" id="finish-header" onclick="toggleFinishSection()">
+          仕上げ調整
+          <span class="toggle-arrow" id="finish-arrow">▼</span>
+        </div>
+        <div class="finish-section-body" id="finish-body">
+          <!-- 影 ON/OFF + 強さスライダー -->
+          <div class="finish-row">
+            <span class="finish-toggle-label">影をつける</span>
+            <label class="finish-toggle">
+              <input type="checkbox" id="shadow-toggle" onchange="onShadowToggle()">
+              <span class="finish-toggle-slider"></span>
+            </label>
+          </div>
+          <div class="finish-shadow-detail" id="shadow-detail">
+            <span class="finish-range-hint">うすい</span>
+            <input type="range" id="shadow-opacity" min="5" max="60" value="25" step="5" oninput="document.getElementById('shadow-opacity-val').textContent=this.value">
+            <span class="finish-range-hint">濃い</span>
+            <span class="finish-range-val" id="shadow-opacity-val">25</span>
+          </div>
+          <!-- 明るさスライダー -->
+          <div class="finish-row" style="margin-top:10px;">
+            <span class="finish-toggle-label">明るさ</span>
+            <div class="finish-range-wrap">
+              <input type="range" id="brightness-val" min="-50" max="50" value="0" step="1" oninput="onBrightnessInput(this.value)">
+              <span class="finish-range-val" id="brightness-display">0</span>
+            </div>
+          </div>
+          <p class="finish-note" id="finish-note" style="display:none;">影あり・または明るさ調整時は白背景で保存されます</p>
+          <div style="margin-top:12px;">
+            <button class="btn btn-outline" onclick="updateLabelPreview()">プレビュー更新</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ラベル追加セクション -->
       <div class="label-section">
         <div class="label-section-header" id="label-header" onclick="toggleLabelSection()">
@@ -275,12 +429,12 @@
 
           <div class="label-btn-row">
             <button class="btn btn-outline" onclick="updateLabelPreview()">プレビュー更新</button>
-            <button class="btn" onclick="downloadWithLabel()">ラベル付きで保存</button>
+            <button class="btn" onclick="downloadWithLabel()">ラベル＆仕上げ付きで保存</button>
           </div>
         </div>
       </div>
 
-      <button class="btn btn-outline" style="margin-top:8px;" onclick="downloadResult()">ラベルなしで保存</button>
+      <button class="btn btn-outline" style="margin-top:8px;" onclick="downloadResult()">何も付けずに保存</button>
       <button class="btn btn-outline" style="margin-top:8px;" onclick="resetAll()">もう一度試す</button>
     </div>
 
@@ -505,15 +659,40 @@
     }
   };
 
-  window.downloadResult = function() {
+  window.downloadResult = async function() {
     if (!resultBlob) return;
-    const url = URL.createObjectURL(resultBlob);
-    const a = document.createElement('a');
+    const finishOpts = getFinishOpts();
+    const hasFinish = finishOpts.shadowOn || finishOpts.brightness !== 0;
     const originalName = selectedFile ? selectedFile.name.replace(/\.[^.]+$/, '') : 'result';
-    a.href = url;
-    a.download = originalName + '_bg-removed.png';
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
+
+    if (!hasFinish) {
+      const url = URL.createObjectURL(resultBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = originalName + '_bg-removed.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    } else {
+      const img = new Image();
+      const blobUrl = URL.createObjectURL(resultBlob);
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        const baseCanvas = document.createElement('canvas');
+        baseCanvas.width = img.naturalWidth;
+        baseCanvas.height = img.naturalHeight;
+        baseCanvas.getContext('2d').drawImage(img, 0, 0);
+        const finishedCanvas = applyFinish(baseCanvas, finishOpts);
+        finishedCanvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = originalName + '_finished.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        }, 'image/png');
+      };
+      img.src = blobUrl;
+    }
   };
 
   window.resetAll = function() {
@@ -533,14 +712,142 @@
       if (el) el.value = '';
     });
     document.getElementById('label-preview-wrap').style.display = 'none';
-    // アコーディオンを閉じる
+    // ラベルアコーディオンを閉じる
     const body = document.getElementById('label-body');
     const header = document.getElementById('label-header');
     const arrow = document.getElementById('label-arrow');
     if (body) body.classList.remove('open');
     if (header) header.classList.remove('open');
     if (arrow) arrow.textContent = '▼';
+    // 仕上げ調整リセット
+    const finishBody = document.getElementById('finish-body');
+    const finishArrow = document.getElementById('finish-arrow');
+    if (finishBody) finishBody.classList.remove('open');
+    if (finishArrow) finishArrow.textContent = '▼';
+    const shadowToggle = document.getElementById('shadow-toggle');
+    if (shadowToggle) { shadowToggle.checked = false; }
+    const shadowDetail = document.getElementById('shadow-detail');
+    if (shadowDetail) shadowDetail.classList.remove('visible');
+    const shadowOpacity = document.getElementById('shadow-opacity');
+    if (shadowOpacity) { shadowOpacity.value = 25; document.getElementById('shadow-opacity-val').textContent = '25'; }
+    const brightnessVal = document.getElementById('brightness-val');
+    if (brightnessVal) { brightnessVal.value = 0; document.getElementById('brightness-display').textContent = '0'; }
+    const finishNote = document.getElementById('finish-note');
+    if (finishNote) finishNote.style.display = 'none';
   };
+
+  // ---- 仕上げ調整 ----
+  window.toggleFinishSection = function() {
+    const body = document.getElementById('finish-body');
+    const arrow = document.getElementById('finish-arrow');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    arrow.textContent = isOpen ? '▼' : '▲';
+    if (!isOpen) updateLabelPreview();
+  };
+
+  window.onShadowToggle = function() {
+    const checked = document.getElementById('shadow-toggle').checked;
+    const detail = document.getElementById('shadow-detail');
+    detail.classList.toggle('visible', checked);
+    updateFinishNote();
+  };
+
+  window.onBrightnessInput = function(val) {
+    const v = parseInt(val, 10);
+    document.getElementById('brightness-display').textContent = v > 0 ? '+' + v : String(v);
+    updateFinishNote();
+  };
+
+  function updateFinishNote() {
+    const shadowOn = document.getElementById('shadow-toggle').checked;
+    const brightness = parseInt(document.getElementById('brightness-val').value, 10);
+    const note = document.getElementById('finish-note');
+    note.style.display = (shadowOn || brightness !== 0) ? 'block' : 'none';
+  }
+
+  function getFinishOpts() {
+    return {
+      shadowOn: document.getElementById('shadow-toggle').checked,
+      shadowOpacity: parseInt(document.getElementById('shadow-opacity').value, 10) / 100,
+      brightness: parseInt(document.getElementById('brightness-val').value, 10)
+    };
+  }
+
+  function applyFinish(srcCanvas, opts) {
+    const { shadowOn, shadowOpacity, brightness } = opts;
+    const hasFinish = shadowOn || brightness !== 0;
+    if (!hasFinish) return srcCanvas;
+
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+    const srcCtx = srcCanvas.getContext('2d');
+    const srcData = srcCtx.getImageData(0, 0, w, h);
+
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = h;
+    const ctx = out.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+
+    if (shadowOn) {
+      let bottomY = 0;
+      outer:
+      for (let y = h - 1; y >= 0; y--) {
+        for (let x = 0; x < w; x++) {
+          if (srcData.data[(y * w + x) * 4 + 3] > 30) {
+            bottomY = y;
+            break outer;
+          }
+        }
+      }
+      let minX = w, maxX = 0;
+      for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) {
+          if (srcData.data[(y * w + x) * 4 + 3] > 30) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            break;
+          }
+        }
+      }
+      const centerX = (minX + maxX) / 2;
+      const productWidth = Math.max(maxX - minX, 1);
+      const shadowH = Math.max(productWidth * 0.06, 8);
+      const blurPx = Math.max(productWidth * 0.025, 6);
+
+      ctx.save();
+      ctx.filter = `blur(${blurPx}px)`;
+      ctx.fillStyle = `rgba(0,0,0,${shadowOpacity})`;
+      ctx.beginPath();
+      ctx.ellipse(centerX, bottomY + shadowH * 0.5, productWidth * 0.85 / 2, shadowH, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    const tmp = document.createElement('canvas');
+    tmp.width = w;
+    tmp.height = h;
+    tmp.getContext('2d').putImageData(srcData, 0, 0);
+    ctx.drawImage(tmp, 0, 0);
+
+    if (brightness !== 0) {
+      const id = ctx.getImageData(0, 0, w, h);
+      const d = id.data;
+      const adj = (brightness / 100) * 80;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] < 10) continue;
+        d[i]     = Math.min(255, Math.max(0, d[i]     + adj));
+        d[i + 1] = Math.min(255, Math.max(0, d[i + 1] + adj));
+        d[i + 2] = Math.min(255, Math.max(0, d[i + 2] + adj));
+      }
+      ctx.putImageData(id, 0, 0);
+    }
+
+    return out;
+  }
 
   // ---- ラベル機能 ----
   window.toggleLabelSection = function() {
@@ -627,19 +934,20 @@
   async function buildLabeledCanvas() {
     if (!resultBlob) return null;
     const labels = getLabelValues();
+    const finishOpts = getFinishOpts();
 
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(resultBlob);
       img.onload = () => {
         URL.revokeObjectURL(url);
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        drawLabels(canvas, labels);
-        resolve(canvas);
+        const baseCanvas = document.createElement('canvas');
+        baseCanvas.width = img.naturalWidth;
+        baseCanvas.height = img.naturalHeight;
+        baseCanvas.getContext('2d').drawImage(img, 0, 0);
+        const finishedCanvas = applyFinish(baseCanvas, finishOpts);
+        drawLabels(finishedCanvas, labels);
+        resolve(finishedCanvas);
       };
       img.onerror = reject;
       img.src = url;
